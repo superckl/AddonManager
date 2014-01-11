@@ -11,9 +11,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permissible;
 import org.bukkit.permissions.ServerOperator;
 
-/**
- * @author superckl - Have a taste of your own medicine
- */
 public class AddonUser
 {
 	@Delegate(types = 

@@ -66,6 +66,9 @@ public class AddonManagerPlugin extends JavaPlugin implements Listener{
 	}
 	
 	public AbstractReloadable getAddon(String name){
-		return this.manager.getAddons().get(name);
+		for(AbstractReloadable addon:this.manager.getAddons().values())
+			if(addon.getAddon().getName().equals(name))
+				return addon;
+		return null;
 	}
 }

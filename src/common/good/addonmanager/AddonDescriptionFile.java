@@ -14,10 +14,6 @@ import common.good.addonmanager.exceptions.InvalidAddonException;
 
 
 
-/**
- *
- * @author DarkSeraphim
- */
 public class AddonDescriptionFile
 {
 	private final YamlConfiguration yml;

@@ -3,10 +3,6 @@ package common.good.addonmanager.storage;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- *
- * @author DarkSeraphim
- */
 public class Storage
 {
 	Map<String, Object> stor = new HashMap<String, Object>();

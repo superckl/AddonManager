@@ -18,10 +18,6 @@ import common.good.addonmanager.storage.Persistant;
 
 
 
-/**
- *
- * @author DarkSeraphim
- */
 public class ReloadableAddon extends AbstractReloadable
 {
 

@@ -10,10 +10,6 @@ import common.good.addonmanager.exceptions.UnknownAddonException;
 
 
 
-/**
- *
- * @author DarkSeraphim
- */
 public abstract class AbstractReloadable
 {
 
@@ -21,7 +17,7 @@ public abstract class AbstractReloadable
 
 	protected boolean isEnabled = false;
 
-	protected Addon getAddon()
+	public Addon getAddon()
 	{
 		return this.addon;
 	}

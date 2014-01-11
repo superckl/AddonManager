@@ -1,11 +1,5 @@
 package common.good.addonmanager;
 
-
-
-/**
- *
- * @author DarkSeraphim
- */
 public abstract class Addon
 {
 

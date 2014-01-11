@@ -24,10 +24,6 @@ import common.good.addonmanager.exceptions.UnknownAddonException;
 
 
 
-/**
- *
- * @author DarkSeraphim
- */
 public class AddonManager implements CommandExecutor
 {
 
