@@ -6,7 +6,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -63,7 +62,7 @@ public class ReloadableAddon extends AbstractReloadable
 				if(field.isAnnotationPresent(Persistant.class)){
 					final Persistant annot = field.getAnnotation(Persistant.class);
 					Object obj = a.getData(Object.class, annot.key());
-					if(obj == null || (annot.reloadOnly() && !reload)){
+					if((obj == null) || (annot.reloadOnly() && !reload)){
 						obj = annot.instantiationType().newInstance();
 						a.setData(annot.key(), obj);
 					}
@@ -88,7 +87,7 @@ public class ReloadableAddon extends AbstractReloadable
 	@Override
 	public void validate(final Addon addon) throws InvalidAddonException
 	{
-		if(addon instanceof Listener == false)
+		if((addon instanceof Listener) == false)
 			throw new InvalidAddonException(String.format("Addon is not a listener"));
 	}
 

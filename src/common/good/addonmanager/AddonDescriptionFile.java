@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import common.good.addonmanager.exceptions.InvalidAddonException;

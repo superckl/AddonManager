@@ -22,12 +22,12 @@ public abstract class AbstractReloadable
 		return this.addon;
 	}
 
-	public abstract Addon load(AddonManagerPlugin plugin, boolean reload) throws UnknownAddonException, InvalidAddonException;
-	public abstract void load(Addon addon);
+	public abstract Addon load(final AddonManagerPlugin plugin, final boolean reload) throws UnknownAddonException, InvalidAddonException;
+	public abstract void load(final Addon addon);
 
 	public abstract void unload();
 
-	public abstract void validate(Addon a) throws InvalidAddonException;
+	public abstract void validate(final Addon a) throws InvalidAddonException;
 
 	public Addon reload(final CommandSender sender, final AddonManagerPlugin plugin)
 	{
@@ -54,7 +54,7 @@ public abstract class AbstractReloadable
 		return a;
 	}
 
-	public abstract void enable(Plugin plugin) throws IllegalStateException;
+	public abstract void enable(final Plugin plugin) throws IllegalStateException;
 
 	public boolean isEnabled()
 	{

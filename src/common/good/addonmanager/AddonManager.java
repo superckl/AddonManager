@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -228,10 +227,10 @@ public class AddonManager implements CommandExecutor
 
 	public void destroy()
 	{
-		for(AbstractReloadable addon:this.addons.values())
+		for(final AbstractReloadable addon:this.addons.values())
 			addon.unload();
 	}
-	
+
 	public Map<String, AbstractReloadable> getAddons(){
 		return this.addons;
 	}
