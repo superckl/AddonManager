@@ -59,8 +59,8 @@ public class AddonManagerPlugin extends JavaPlugin{
 	 * @throws IllegalArgumentException
 	 */
 	public boolean registerCommand(final Command command, final String fallbackPrefix, final Class<?> craftServer) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
-		//if(!craftServer.isAssignableFrom(this.getServer().getClass()))
-		//	return false;
+		if(!craftServer.isAssignableFrom(this.getServer().getClass()))
+			return false;
 		if(this.bukkitCommandMap == null){
 			final Field f = this.getServer().getClass().getDeclaredField("commandMap");
 			f.setAccessible(true);
