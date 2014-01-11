@@ -51,16 +51,13 @@ public class AddonManagerPlugin extends JavaPlugin{
 	 * Make sure you take into the account the possibility of your addon being unloaded.
 	 * @param command The command to register.
 	 * @param fallbackPrefix A prefix that bukkit will use if your command's name is already taken. Pass null for no prefix.
-	 * @param craftServer The class that represents CraftServer. You must provide it to ensure version compatibility of AddonManager. ProtocolLib has a version safe method for this.
 	 * @return Whether or not the registration was succesful.
 	 * @throws SecurityException
 	 * @throws NoSuchFieldException
 	 * @throws IllegalAccessException
 	 * @throws IllegalArgumentException
 	 */
-	public boolean registerCommand(final Command command, final String fallbackPrefix, final Class<?> craftServer) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
-		if(!craftServer.isAssignableFrom(this.getServer().getClass()))
-			return false;
+	public boolean registerCommand(final Command command, final String fallbackPrefix) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
 		if(this.bukkitCommandMap == null){
 			final Field f = this.getServer().getClass().getDeclaredField("commandMap");
 			f.setAccessible(true);
