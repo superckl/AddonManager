@@ -5,6 +5,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
@@ -13,6 +16,7 @@ import org.bukkit.plugin.Plugin;
 
 import common.good.addonmanager.exceptions.InvalidAddonException;
 import common.good.addonmanager.exceptions.UnknownAddonException;
+import common.good.addonmanager.storage.ExtendPersistance;
 import common.good.addonmanager.storage.Persistant;
 
 
@@ -27,6 +31,10 @@ public class ReloadableAddon extends AbstractReloadable
 		this.name = name;
 	}
 
+	/**
+	 * Loads an addon from the disk.
+	 * @param reload Whether or not this was cause by a reload, used by @Persistant
+	 */
 	@Override
 	public Addon load(final AddonManagerPlugin plugin, final boolean reload) throws UnknownAddonException, InvalidAddonException
 	{
@@ -56,20 +64,25 @@ public class ReloadableAddon extends AbstractReloadable
 			//	throw new InvalidAddonException(String.format("Addon is not a listener"));
 
 			//Look for StorageRestore and restore where possible
-			for(final Field field:a.getClass().getDeclaredFields()){
-				final boolean initialFlag = field.isAccessible();
-				field.setAccessible(true);
-				if(field.isAnnotationPresent(Persistant.class)){
-					final Persistant annot = field.getAnnotation(Persistant.class);
-					Object obj = a.getData(Object.class, annot.key());
-					if((obj == null) || (annot.reloadOnly() && !reload)){
-						obj = annot.instantiationType().newInstance();
-						a.setData(annot.key(), obj);
+			final Set<Class<?>> classes = new HashSet<Class<?>>();
+			classes.add(addonClass);
+			if(addonClass.isAnnotationPresent(ExtendPersistance.class))
+				classes.addAll(Arrays.asList(addonClass.getAnnotation(ExtendPersistance.class).classes()));
+			for(final Class<?> check:classes)
+				for(final Field field:check.getDeclaredFields()){
+					final boolean initialFlag = field.isAccessible();
+					field.setAccessible(true);
+					if(field.isAnnotationPresent(Persistant.class)){
+						final Persistant annot = field.getAnnotation(Persistant.class);
+						Object obj = a.getData(Object.class, annot.key());
+						if((obj == null) || (annot.reloadOnly() && !reload)){
+							obj = annot.instantiationType().newInstance();
+							a.setData(annot.key(), obj);
+						}
+						field.set(a, obj);
 					}
-					field.set(a, obj);
+					field.setAccessible(initialFlag);
 				}
-				field.setAccessible(initialFlag);
-			}
 			if(!reload)
 				this.addon = a;
 		}

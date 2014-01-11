@@ -7,12 +7,16 @@ import common.good.addonmanager.AbstractReloadable;
 
 public class AddonMessageEvent extends Event{
 
-	private AbstractReloadable addon;
+	private final AbstractReloadable addon;
 	//TODO how to store message
-	public AddonMessageEvent(AbstractReloadable addon){
+	public AddonMessageEvent(final AbstractReloadable addon){
 		this.addon = addon;
 	}
-	
+
+	public AbstractReloadable getAddon(){
+		return this.addon;
+	}
+
 	@Override
 	public HandlerList getHandlers() {
 		return new HandlerList();

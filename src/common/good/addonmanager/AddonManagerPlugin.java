@@ -32,14 +32,20 @@ public class AddonManagerPlugin extends JavaPlugin{
 		this.manager.destroy();
 	}
 
+	/**
+	 * @return The static reference to AddonManagerPlugin
+	 */
 	public static AddonManagerPlugin getInstance(){
 		return AddonManagerPlugin.instance;
 	}
 
+	/**
+	 * @return The default Storage reference
+	 */
 	public Storage getStorage(){
 		return this.data;
 	}
-	
+
 	/**
 	 * Registers a command with bukkit. If you have already used this method, and this plugin has not been reloaded, you can pass null for the CraftSerevr class.
 	 * Make sure you take into the account the possibility of your addon being unloaded.
@@ -47,12 +53,12 @@ public class AddonManagerPlugin extends JavaPlugin{
 	 * @param fallbackPrefix A prefix that bukkit will use if your command's name is already taken. Pass null for no prefix.
 	 * @param craftServer The class that represents CraftServer. You must provide it to ensure version compatibility of AddonManager. ProtocolLib has a version safe method for this.
 	 * @return Whether or not the registration was succesful.
-	 * @throws SecurityException 
-	 * @throws NoSuchFieldException 
-	 * @throws IllegalAccessException 
-	 * @throws IllegalArgumentException 
+	 * @throws SecurityException
+	 * @throws NoSuchFieldException
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
 	 */
-	public boolean registerCommand(Command command, String fallbackPrefix, Class<?> craftServer) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
+	public boolean registerCommand(final Command command, final String fallbackPrefix, final Class<?> craftServer) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException{
 		//if(!craftServer.isAssignableFrom(this.getServer().getClass()))
 		//	return false;
 		if(this.bukkitCommandMap == null){
@@ -60,14 +66,21 @@ public class AddonManagerPlugin extends JavaPlugin{
 			f.setAccessible(true);
 			this.bukkitCommandMap = (CommandMap) f.get(this.getServer());
 		}
-		if()
 		return this.bukkitCommandMap.register(fallbackPrefix == null ? "":fallbackPrefix, command);
 	}
-	
+
+	/**
+	 * @return All loaded addons with their corresponding name
+	 */
 	public Map<String, AbstractReloadable> getLoadedAddons(){
 		return this.manager.getAddons();
 	}
 
+	/**
+	 * Retrieves an Addon by it's name by looping over the set of all loaded addons and checking their description files.
+	 * @param name The name of the Addon to retrieve
+	 * @return The addon retrieved, may be null
+	 */
 	public AbstractReloadable getAddon(final String name){
 		for(final AbstractReloadable addon:this.manager.getAddons().values())
 			if(addon.getAddon().getName().equals(name))
