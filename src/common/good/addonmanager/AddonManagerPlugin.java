@@ -20,6 +20,7 @@ public class AddonManagerPlugin extends JavaPlugin{
 	private static AddonManagerPlugin instance;
 	private final Storage data = new Storage();
 	private AddonManager manager;
+	
 	private CommandMap bukkitCommandMap;
 	private Map<String, Command> knownCommands;
 	private Set<String> aliases;
@@ -61,37 +62,40 @@ public class AddonManagerPlugin extends JavaPlugin{
 	 * @param addon The addon requesting the registration
 	 * @param fallbackPrefix The prefix to append should the commands name be taken. Usually the name of the addon.
 	 * @param command The command to register.
-	 * @return Whether or not the registration was succesful.
+	 * @return Whether or not the registration didn't use the fallback prefix.
 	 * @see {@link org.bukkit.command.CommandMap #register(String, Command)}
-	 * @throws SecurityException
-	 * @throws NoSuchFieldException
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
-	 * @throws InvalidAddonException 
 	 */
-	public boolean registerCommand(Addon addon, String fallbackPrefix, final Command command) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InvalidAddonException{
-		if(this.bukkitCommandMap == null){
-			final Field f = this.getServer().getClass().getDeclaredField("commandMap");
-			f.setAccessible(true);
-			this.bukkitCommandMap = (CommandMap) f.get(this.getServer());
+	public boolean registerCommand(Addon addon, String fallbackPrefix, final Command command){
+		try {
+			if(this.bukkitCommandMap == null){
+				final Field f = this.getServer().getClass().getDeclaredField("commandMap");
+				f.setAccessible(true);
+				this.bukkitCommandMap = (CommandMap) f.get(this.getServer());
+			}
+			if(this.knownCommands == null){
+				final Field f = this.bukkitCommandMap.getClass().getDeclaredField("knownCommands");
+				f.setAccessible(true);
+				this.knownCommands = (Map<String, Command>) f.get(this.bukkitCommandMap);
+			}
+			if(this.aliases == null){
+				final Field f = this.bukkitCommandMap.getClass().getDeclaredField("aliases");
+				f.setAccessible(true);
+				this.aliases = (Set<String>) f.get(this.bukkitCommandMap);
+			}
+			if(fallbackPrefix == null || fallbackPrefix.isEmpty())
+				throw new IllegalArgumentException("Addon "+addon.getName()+" tried to register a command with a null or empty fallback prefix!");
+			ReloadableAddon reloadable = this.getByAddon(addon);
+			if(reloadable == null)
+				throw new InvalidAddonException("No corresponding ReloadableAddon found for "+addon.getName());
+			reloadable.addCommand(command, fallbackPrefix);
+			return this.bukkitCommandMap.register(fallbackPrefix == null ? "":fallbackPrefix, command);
+		} catch (NoSuchFieldException | SecurityException
+				| IllegalArgumentException | IllegalAccessException
+				| InvalidAddonException e) {
+			this.getLogger().severe("Failed to register command "+command.getName()+" for addon "+addon.getName());
+			e.printStackTrace();
 		}
-		if(this.knownCommands == null){
-			final Field f = this.bukkitCommandMap.getClass().getDeclaredField("knownCommands");
-			f.setAccessible(true);
-			this.knownCommands = (Map<String, Command>) f.get(this.bukkitCommandMap);
-		}
-		if(this.aliases == null){
-			final Field f = this.bukkitCommandMap.getClass().getDeclaredField("aliases");
-			f.setAccessible(true);
-			this.aliases = (Set<String>) f.get(this.bukkitCommandMap);
-		}
-		if(fallbackPrefix == null || fallbackPrefix.isEmpty())
-			throw new IllegalArgumentException("Addon "+addon.getName()+" tried to register a command with a null or empty fallback prefix!");
-		ReloadableAddon reloadable = this.getByAddon(addon);
-		if(reloadable == null)
-			throw new InvalidAddonException("No corresponding ReloadableAddon found for "+addon.getName());
-		reloadable.addCommand(command, fallbackPrefix);
-		return this.bukkitCommandMap.register(fallbackPrefix == null ? "":fallbackPrefix, command);
+		return true;
 	}
 	
 	/**
@@ -100,13 +104,17 @@ public class AddonManagerPlugin extends JavaPlugin{
 	 * @param command The command to unregister
 	 * @param prefix The fallback prefix used when registering the command
 	 * @see {@link #registerCommand(Addon, String, Command)}
-	 * @throws InvalidAddonException
 	 */
-	public void unregisterCommand(Addon addon, Command command, String prefix) throws InvalidAddonException{
-		ReloadableAddon reloadable = this.getByAddon(addon);
-		if(reloadable == null)
-			throw new InvalidAddonException("No corresponding ReloadableAddon found for "+addon.getName());
-		this.unregisterCommand(reloadable, command, prefix);
+	public void unregisterCommand(Addon addon, Command command, String prefix){
+		try {
+			ReloadableAddon reloadable = this.getByAddon(addon);
+			if(reloadable == null)
+				throw new InvalidAddonException("No corresponding ReloadableAddon found for "+addon.getName());
+			this.unregisterCommand(reloadable, command, prefix);
+		} catch (InvalidAddonException e) {
+			this.getLogger().severe("Failed to unregister command "+command.getName()+" for addon "+addon.getName()+". Addon may not unload properly.");
+			e.printStackTrace();
+		}
 	}
 	
 	void unregisterCommand(ReloadableAddon addon, Command command, String prefix){
@@ -133,13 +141,18 @@ public class AddonManagerPlugin extends JavaPlugin{
 	 * @throws InvalidAddonException 
 	 * @see {@link org.bukkit.plugin.PluginManager #registerEvents(Listener, org.bukkit.plugin.Plugin)}
 	 */
-	public void registerListener(Addon addon, Listener listener) throws InvalidAddonException{
-		ReloadableAddon reloadable = this.getByAddon(addon);
-		if(reloadable == null){
-			throw new InvalidAddonException("No corresponding ReloadableAddon found for "+addon.getName());
+	public void registerListener(Addon addon, Listener listener){
+		try {
+			ReloadableAddon reloadable = this.getByAddon(addon);
+			if(reloadable == null){
+				throw new InvalidAddonException("No corresponding ReloadableAddon found for "+addon.getName());
+			}
+			this.getServer().getPluginManager().registerEvents(listener, this);
+			reloadable.addListener(listener);
+		} catch (InvalidAddonException e) {
+			this.getLogger().severe("Failed to register listener for addon "+addon.getName());
+			e.printStackTrace();
 		}
-		this.getServer().getPluginManager().registerEvents(listener, this);
-		reloadable.addListener(listener);
 	}
 	
 	/**
@@ -149,13 +162,18 @@ public class AddonManagerPlugin extends JavaPlugin{
 	 * @see {@link #registerListener(Addon, Listener)}
 	 * @throws InvalidAddonException
 	 */
-	public void unregisterListener(Addon addon, Listener listener) throws InvalidAddonException{
-		ReloadableAddon reloadable = this.getByAddon(addon);
-		if(reloadable == null){
-			throw new InvalidAddonException("No corresponding ReloadableAddon found for "+addon.getName());
+	public void unregisterListener(Addon addon, Listener listener){
+		try {
+			ReloadableAddon reloadable = this.getByAddon(addon);
+			if(reloadable == null){
+				throw new InvalidAddonException("No corresponding ReloadableAddon found for "+addon.getName());
+			}
+			HandlerList.unregisterAll(listener);
+			reloadable.removeListener(listener);
+		} catch (InvalidAddonException e) {
+			this.getLogger().severe("Failed to unregister listener for addon "+addon.getName()+". Addon may not unload properly.");
+			e.printStackTrace();
 		}
-		HandlerList.unregisterAll(listener);
-		reloadable.removeListener(listener);
 	}
 
 	/**

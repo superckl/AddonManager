@@ -11,7 +11,6 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -132,9 +131,13 @@ public class ReloadableAddon extends AbstractReloadable
 	{
 		if(this.addon == null)
 			throw new IllegalStateException("Addon not loaded");
-		this.addon.onEnable();
-		Bukkit.getPluginManager().registerEvents((Listener)this.addon, plugin);
-		this.isEnabled = true;
+		try{
+			this.addon.onEnable();
+			this.isEnabled = true;
+		}catch(Exception e){
+			AddonManagerPlugin.getInstance().getLogger().severe("Error while enabling addon "+this.getAddon().getName());
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -154,7 +157,12 @@ public class ReloadableAddon extends AbstractReloadable
 			AddonManagerPlugin plugin = AddonManagerPlugin.getInstance();
 			for(Entry<Command, String> command:this.commands.entrySet())
 				plugin.unregisterCommand(this, command.getKey(), command.getValue());
-			this.addon.onDisable();
+			try{
+				this.addon.onDisable();
+			}catch(Exception e){
+				AddonManagerPlugin.getInstance().getLogger().severe("Error while disabling addon "+this.getAddon().getName());
+				e.printStackTrace();
+			}
 		}
 		this.isEnabled = false;
 	}
