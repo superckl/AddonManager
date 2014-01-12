@@ -21,19 +21,22 @@ public abstract class AbstractReloadable
 		return this.addon;
 	}
 
-	public abstract Addon load(final AddonManagerPlugin plugin, final boolean reload) throws UnknownAddonException, InvalidAddonException;
+	public abstract Addon load(final AddonManagerPlugin plugin, final boolean reload, final boolean hardReload) throws UnknownAddonException, InvalidAddonException;
+	public Addon load(final AddonManagerPlugin plugin, final boolean reload) throws UnknownAddonException, InvalidAddonException{
+		return this.load(plugin, reload, false);
+	}
 	public abstract void load(final Addon addon);
 
 	public abstract void unload();
 
 	public abstract void validate(final Addon a) throws InvalidAddonException;
 
-	public Addon reload(final CommandSender sender, final AddonManagerPlugin plugin)
+	public Addon reload(final CommandSender sender, final AddonManagerPlugin plugin, final boolean hard)
 	{
 		Addon a = null;
 		try
 		{
-			a = this.load(plugin, true);
+			a = this.load(plugin, true, hard);
 		}
 		catch(final UnknownAddonException ex)
 		{

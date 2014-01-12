@@ -39,11 +39,12 @@ public class ReloadableAddon extends AbstractReloadable
 	/**
 	 * Loads an addon from the disk.
 	 * @param reload Whether or not this was cause by a reload, used by @Persistant
+	 * @param hardReload Whether or not to reset a plugins persistant data
 	 */
 	@Override
-	public Addon load(final AddonManagerPlugin plugin, final boolean reload) throws UnknownAddonException, InvalidAddonException
+	public Addon load(final AddonManagerPlugin plugin, final boolean reload, final boolean hardReload) throws UnknownAddonException, InvalidAddonException
 	{
-		final File file = new File(plugin.getDataFolder(), String.format("listeners/%s.jar", this.name));
+		final File file = new File(plugin.getDataFolder(), String.format("addons/%s.jar", this.name));
 		if(!file.exists())
 			throw new UnknownAddonException(this.name);
 		URL[] urls = new URL[0];
@@ -80,7 +81,7 @@ public class ReloadableAddon extends AbstractReloadable
 					if(field.isAnnotationPresent(Persistant.class)){
 						final Persistant annot = field.getAnnotation(Persistant.class);
 						Object obj = a.getData(Object.class, annot.key());
-						if((obj == null) || (annot.reloadOnly() && !reload)){
+						if((obj == null) || (annot.reloadOnly() && !reload) || hardReload){
 							obj = annot.instantiationType().newInstance();
 							a.setData(annot.key(), obj);
 						}

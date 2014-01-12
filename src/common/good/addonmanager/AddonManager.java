@@ -16,12 +16,12 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.conversations.Conversable;
+import org.bukkit.conversations.ConversationFactory;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import common.good.addonmanager.exceptions.InvalidAddonException;
 import common.good.addonmanager.exceptions.UnknownAddonException;
-
-
 
 public class AddonManager implements CommandExecutor
 {
@@ -40,15 +40,18 @@ public class AddonManager implements CommandExecutor
 	}
 
 	private final boolean usePermissions;
+	private final ConversationFactory factory;
 
 	public AddonManager(final AddonManagerPlugin plugin, final boolean usePermissions)
 	{
 		this.plugin = plugin;
 		this.usePermissions = usePermissions;
+		this.factory = new ConversationFactory(plugin).thatExcludesNonPlayersWithMessage("What are you doing here?").withLocalEcho(false)
+				.withTimeout(20);
 		final File pluginFolder = plugin.getDataFolder();
 		if(!pluginFolder.exists())
 			pluginFolder.mkdirs();
-		final File lFolder = new File(pluginFolder, "listeners");
+		final File lFolder = new File(pluginFolder, "addons");
 		if(!lFolder.exists() || !lFolder.isDirectory())
 			lFolder.mkdirs();
 		ClassLoader cl = null;
@@ -182,7 +185,7 @@ public class AddonManager implements CommandExecutor
 			{
 				final AbstractReloadable ar = this.addons.get(args[1]);
 				Addon a;
-				a = ar.reload(sender, this.plugin);
+				a = ar.reload(sender, this.plugin, false);
 				if(a == null)
 				{
 					sender.sendMessage(ChatColor.RED+"Failed to reload the addon!");
@@ -207,6 +210,24 @@ public class AddonManager implements CommandExecutor
 			if(list.length() > 2)
 				list.delete(list.length()-2, list.length());
 			sender.sendMessage(String.format("Addons: %s", list.toString()));
+		}else if(args[0].equalsIgnoreCase("hardreload")){
+			if(sender instanceof Conversable == false){
+				sender.sendMessage(ChatColor.RED+"What are you?");
+				return true;
+			}
+			if(this.usePermissions && !sender.hasPermission("addonmanager.hardreload")){
+				sender.sendMessage(ChatColor.RED+"You don't have permission to use that command!");
+				return true;
+			}
+			if(args.length < 2)
+				sender.sendMessage(ChatColor.RED+"Please specify the addon you want to reload");
+			else if(!this.addons.containsKey(args[1]))
+				sender.sendMessage(ChatColor.RED+"Addon not found.");
+			else
+			{
+				final AbstractReloadable ar = this.addons.get(args[1]);
+				((Conversable)sender).beginConversation(this.factory.withFirstPrompt(new HardReloadConvo(this.plugin, ar, sender)).buildConversation((Conversable) sender));
+			}
 		}
 		return true;
 	}
@@ -214,7 +235,7 @@ public class AddonManager implements CommandExecutor
 	public final void loadAll(final Set<String> excludes)
 	{
 		//TODO dependencies
-		final File lisDir = new File(this.plugin.getDataFolder(), "listeners");
+		final File lisDir = new File(this.plugin.getDataFolder(), "addons");
 		final File[] files = lisDir.listFiles(new FileFilter()
 		{
 			@Override
