@@ -20,11 +20,11 @@ public class AddonManagerPlugin extends JavaPlugin{
 	private static AddonManagerPlugin instance;
 	private final Storage data = new Storage();
 	private AddonManager manager;
-	
+
 	private CommandMap bukkitCommandMap;
 	private Map<String, Command> knownCommands;
 	private Set<String> aliases;
-	
+
 	private final String aliasMatcher = "[%s:]*[%s]";
 
 	@Override
@@ -64,7 +64,7 @@ public class AddonManagerPlugin extends JavaPlugin{
 	 * @return Whether or not the registration didn't use the fallback prefix.
 	 * @see {@link org.bukkit.command.CommandMap #register(String, Command)}
 	 */
-	public boolean registerCommand(Addon addon, String fallbackPrefix, final Command command){
+	public boolean registerCommand(final Addon addon, final String fallbackPrefix, final Command command){
 		try {
 			if(this.bukkitCommandMap == null){
 				final Field f = this.getServer().getClass().getDeclaredField("commandMap");
@@ -81,9 +81,9 @@ public class AddonManagerPlugin extends JavaPlugin{
 				f.setAccessible(true);
 				this.aliases = (Set<String>) f.get(this.bukkitCommandMap);
 			}
-			if(fallbackPrefix == null || fallbackPrefix.isEmpty())
+			if((fallbackPrefix == null) || fallbackPrefix.isEmpty())
 				throw new IllegalArgumentException("Addon "+addon.getName()+" tried to register a command with a null or empty fallback prefix!");
-			ReloadableAddon reloadable = this.getByAddon(addon);
+			final ReloadableAddon reloadable = this.getByAddon(addon);
 			if(reloadable == null)
 				throw new InvalidAddonException("No corresponding ReloadableAddon found for "+addon.getName());
 			reloadable.addCommand(command, fallbackPrefix);
@@ -96,7 +96,7 @@ public class AddonManagerPlugin extends JavaPlugin{
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Removes a registered command from Bukkit
 	 * @param addon The addon requesting the unregistration
@@ -104,56 +104,53 @@ public class AddonManagerPlugin extends JavaPlugin{
 	 * @param prefix The fallback prefix used when registering the command
 	 * @see {@link #registerCommand(Addon, String, Command)}
 	 */
-	public void unregisterCommand(Addon addon, Command command, String prefix){
+	public void unregisterCommand(final Addon addon, final Command command, final String prefix){
 		try {
-			ReloadableAddon reloadable = this.getByAddon(addon);
+			final ReloadableAddon reloadable = this.getByAddon(addon);
 			if(reloadable == null)
 				throw new InvalidAddonException("No corresponding ReloadableAddon found for "+addon.getName());
 			this.unregisterCommand(reloadable, command, prefix);
-		} catch (InvalidAddonException e) {
+		} catch (final InvalidAddonException e) {
 			this.getLogger().severe("Failed to unregister command "+command.getName()+" for addon "+addon.getName()+". Addon may not unload properly.");
 			e.printStackTrace();
 		}
 	}
-	
-	void unregisterCommand(ReloadableAddon addon, Command command, String prefix){
+
+	void unregisterCommand(final ReloadableAddon addon, final Command command, final String prefix){
 		this.removeFromBukkit(command, prefix);
 		addon.removeCommand(command);
 	}
-	
-	private void removeFromBukkit(Command command, String prefix){
+
+	private void removeFromBukkit(final Command command, final String prefix){
 		this.knownCommands.remove(command.getLabel());
-		for(String alias:command.getAliases()){
-			Iterator<String> it = this.aliases.iterator();
-			while(it.hasNext()){
-				if(it.next().matches(String.format(this.aliasMatcher, prefix, alias))){
+		final Iterator<String> it = this.aliases.iterator();
+		while(it.hasNext()){
+			final String alias = it.next();
+			for(final String cAlias:command.getAliases())
+				if(alias.matches(String.format(this.aliasMatcher, prefix, cAlias)))
 					it.remove();
-					continue;
-				}
-			}
 		}
 	}
 	/**
 	 * Registeres a Listener with Bukkit
 	 * @param addon The addon requesting the registration
 	 * @param listener The listener to register
-	 * @throws InvalidAddonException 
+	 * @throws InvalidAddonException
 	 * @see {@link org.bukkit.plugin.PluginManager #registerEvents(Listener, org.bukkit.plugin.Plugin)}
 	 */
-	public void registerListener(Addon addon, Listener listener){
+	public void registerListener(final Addon addon, final Listener listener){
 		try {
-			ReloadableAddon reloadable = this.getByAddon(addon);
-			if(reloadable == null){
+			final ReloadableAddon reloadable = this.getByAddon(addon);
+			if(reloadable == null)
 				throw new InvalidAddonException("No corresponding ReloadableAddon found for "+addon.getName());
-			}
 			this.getServer().getPluginManager().registerEvents(listener, this);
 			reloadable.addListener(listener);
-		} catch (InvalidAddonException e) {
+		} catch (final InvalidAddonException e) {
 			this.getLogger().severe("Failed to register listener for addon "+addon.getName());
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Unregisters a listener from Bukkit
 	 * @param addon The addon requesting the unregistration
@@ -161,15 +158,14 @@ public class AddonManagerPlugin extends JavaPlugin{
 	 * @see {@link #registerListener(Addon, Listener)}
 	 * @throws InvalidAddonException
 	 */
-	public void unregisterListener(Addon addon, Listener listener){
+	public void unregisterListener(final Addon addon, final Listener listener){
 		try {
-			ReloadableAddon reloadable = this.getByAddon(addon);
-			if(reloadable == null){
+			final ReloadableAddon reloadable = this.getByAddon(addon);
+			if(reloadable == null)
 				throw new InvalidAddonException("No corresponding ReloadableAddon found for "+addon.getName());
-			}
 			HandlerList.unregisterAll(listener);
 			reloadable.removeListener(listener);
-		} catch (InvalidAddonException e) {
+		} catch (final InvalidAddonException e) {
 			this.getLogger().severe("Failed to unregister listener for addon "+addon.getName()+". Addon may not unload properly.");
 			e.printStackTrace();
 		}
@@ -193,12 +189,11 @@ public class AddonManagerPlugin extends JavaPlugin{
 				return addon.getAddon();
 		return null;
 	}
-	
-	private ReloadableAddon getByAddon(Addon addon){
-		for(AbstractReloadable reloadable:this.manager.addons.values()){
+
+	private ReloadableAddon getByAddon(final Addon addon){
+		for(final AbstractReloadable reloadable:this.manager.addons.values())
 			if(addon == reloadable.getAddon())
 				return (ReloadableAddon) reloadable;
-		}
 		return null;
 	}
 }

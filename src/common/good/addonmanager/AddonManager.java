@@ -38,10 +38,10 @@ public class AddonManager implements CommandExecutor
 	{
 		log = Logger.getLogger("AddonManager");
 	}
-	
+
 	private final boolean usePermissions;
 
-	public AddonManager(final AddonManagerPlugin plugin, boolean usePermissions)
+	public AddonManager(final AddonManagerPlugin plugin, final boolean usePermissions)
 	{
 		this.plugin = plugin;
 		this.usePermissions = usePermissions;
@@ -76,7 +76,7 @@ public class AddonManager implements CommandExecutor
 	@Override
 	public boolean onCommand(final CommandSender sender, final Command cmnd, final String label, final String[] args)
 	{
-		if(!this.usePermissions && sender instanceof ConsoleCommandSender == false)
+		if(!this.usePermissions && ((sender instanceof ConsoleCommandSender) == false))
 		{
 			sender.sendMessage(ChatColor.RED+"You don't have permission to use that command!");
 			return true;

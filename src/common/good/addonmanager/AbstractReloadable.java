@@ -52,7 +52,7 @@ public abstract class AbstractReloadable
 		}
 		return a;
 	}
-	
+
 	public abstract void enable(final Plugin plugin) throws IllegalStateException;
 
 	public boolean isEnabled()

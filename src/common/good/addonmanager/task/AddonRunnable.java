@@ -10,7 +10,7 @@ import common.good.addonmanager.AddonManagerPlugin;
 public abstract class AddonRunnable extends BukkitRunnable{
 
 	private volatile boolean finished;
-	
+
 	/**
 	 * ALWAYS call this when your task is finished running. Otherwise, you may have caused a memory leak. Tsk tsk.
 	 */
@@ -18,7 +18,7 @@ public abstract class AddonRunnable extends BukkitRunnable{
 		//TODO Remove references to BukkitTask here
 		this.finished = true;
 	}
-	
+
 	@Override
 	synchronized public void cancel(){
 		super.cancel();

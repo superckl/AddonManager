@@ -66,11 +66,11 @@ public class AddonDescriptionFile
 	{
 		return this.yml.getString("name", "");
 	}
-	
+
 	public List<String> getAddonDependencies(){
 		return this.yml.getStringList("addon dependencies");
 	}
-	
+
 	public List<String> getPluginDependencies(){
 		return this.yml.getStringList("plugin dependencies");
 	}

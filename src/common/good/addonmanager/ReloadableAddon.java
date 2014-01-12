@@ -27,7 +27,7 @@ public class ReloadableAddon extends AbstractReloadable
 {
 
 	private final String name;
-	
+
 	private Set<Listener> listeners;
 	private HashMap<Command, String> commands;
 
@@ -134,7 +134,7 @@ public class ReloadableAddon extends AbstractReloadable
 		try{
 			this.addon.onEnable();
 			this.isEnabled = true;
-		}catch(Exception e){
+		}catch(final Exception e){
 			AddonManagerPlugin.getInstance().getLogger().severe("Error while enabling addon "+this.getAddon().getName());
 			e.printStackTrace();
 		}
@@ -151,35 +151,35 @@ public class ReloadableAddon extends AbstractReloadable
 	{
 		if(this.addon != null)
 		{
-			for(Listener listener:this.listeners)
+			for(final Listener listener:this.listeners)
 				HandlerList.unregisterAll(listener);
 			this.listeners.clear();
-			AddonManagerPlugin plugin = AddonManagerPlugin.getInstance();
-			for(Entry<Command, String> command:this.commands.entrySet())
+			final AddonManagerPlugin plugin = AddonManagerPlugin.getInstance();
+			for(final Entry<Command, String> command:this.commands.entrySet())
 				plugin.unregisterCommand(this, command.getKey(), command.getValue());
 			try{
 				this.addon.onDisable();
-			}catch(Exception e){
+			}catch(final Exception e){
 				AddonManagerPlugin.getInstance().getLogger().severe("Error while disabling addon "+this.getAddon().getName());
 				e.printStackTrace();
 			}
 		}
 		this.isEnabled = false;
 	}
-	
-	void addCommand(Command command, String prefix){
+
+	void addCommand(final Command command, final String prefix){
 		this.commands.put(command, prefix);
 	}
-	
-	void addListener(Listener listener){
+
+	void addListener(final Listener listener){
 		this.listeners.add(listener);
 	}
-	
-	void removeCommand(Command command){
+
+	void removeCommand(final Command command){
 		this.commands.remove(command);
 	}
-	
-	void removeListener(Listener listener){
+
+	void removeListener(final Listener listener){
 		this.commands.remove(listener);
 	}
 
