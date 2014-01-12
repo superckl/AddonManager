@@ -31,7 +31,6 @@ public class AddonManagerPlugin extends JavaPlugin{
 	public void onEnable(){
 		AddonManagerPlugin.instance = this;
 		this.saveDefaultConfig();
-		this.getLogger().info("Registering listeners...");
 		this.getLogger().info("Loading addons...");
 		this.manager = new AddonManager(this, this.getConfig().getBoolean("Use Permissions"));
 		this.getServer().getPluginCommand("addons").setExecutor(this.manager);
