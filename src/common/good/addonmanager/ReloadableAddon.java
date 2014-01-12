@@ -6,10 +6,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
@@ -25,6 +28,9 @@ public class ReloadableAddon extends AbstractReloadable
 {
 
 	private final String name;
+	
+	private Set<Listener> listeners;
+	private HashMap<Command, String> commands;
 
 	ReloadableAddon(final String name)
 	{
@@ -142,10 +148,31 @@ public class ReloadableAddon extends AbstractReloadable
 	{
 		if(this.addon != null)
 		{
-			HandlerList.unregisterAll((Listener)this.addon);
+			for(Listener listener:this.listeners)
+				HandlerList.unregisterAll(listener);
+			this.listeners.clear();
+			AddonManagerPlugin plugin = AddonManagerPlugin.getInstance();
+			for(Entry<Command, String> command:this.commands.entrySet())
+				plugin.unregisterCommand(this, command.getKey(), command.getValue());
 			this.addon.onDisable();
 		}
 		this.isEnabled = false;
+	}
+	
+	void addCommand(Command command, String prefix){
+		this.commands.put(command, prefix);
+	}
+	
+	void addListener(Listener listener){
+		this.listeners.add(listener);
+	}
+	
+	void removeCommand(Command command){
+		this.commands.remove(command);
+	}
+	
+	void removeListener(Listener listener){
+		this.commands.remove(listener);
 	}
 
 }

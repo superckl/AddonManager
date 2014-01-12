@@ -4,5 +4,5 @@ version: 1.0
 main: common.good.addonmanager.AddonManagerPlugin
 commands:
   addons:
-    description: Command for the Addon Manager :3.
+    description: Command for the Addon Manager.
   

@@ -1,6 +1,5 @@
 package common.good.addonmanager;
 
-
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
@@ -53,7 +52,7 @@ public abstract class AbstractReloadable
 		}
 		return a;
 	}
-
+	
 	public abstract void enable(final Plugin plugin) throws IllegalStateException;
 
 	public boolean isEnabled()

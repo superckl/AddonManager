@@ -4,6 +4,7 @@ package common.good.addonmanager;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -64,5 +65,13 @@ public class AddonDescriptionFile
 	public String getName()
 	{
 		return this.yml.getString("name", "");
+	}
+	
+	public List<String> getAddonDependencies(){
+		return this.yml.getStringList("addon dependencies");
+	}
+	
+	public List<String> getPluginDependencies(){
+		return this.yml.getStringList("plugin dependencies");
 	}
 }

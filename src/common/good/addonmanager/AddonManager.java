@@ -15,7 +15,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import common.good.addonmanager.exceptions.InvalidAddonException;
@@ -38,10 +38,13 @@ public class AddonManager implements CommandExecutor
 	{
 		log = Logger.getLogger("AddonManager");
 	}
+	
+	private final boolean usePermissions;
 
-	public AddonManager(final AddonManagerPlugin plugin)
+	public AddonManager(final AddonManagerPlugin plugin, boolean usePermissions)
 	{
 		this.plugin = plugin;
+		this.usePermissions = usePermissions;
 		final File pluginFolder = plugin.getDataFolder();
 		if(!pluginFolder.exists())
 			pluginFolder.mkdirs();
@@ -73,9 +76,9 @@ public class AddonManager implements CommandExecutor
 	@Override
 	public boolean onCommand(final CommandSender sender, final Command cmnd, final String label, final String[] args)
 	{
-		if(sender instanceof Player)
+		if(!this.usePermissions && sender instanceof ConsoleCommandSender == false)
 		{
-			sender.sendMessage(ChatColor.RED+"Cockblocked. Stay away from the addons!");
+			sender.sendMessage(ChatColor.RED+"You don't have permission to use that command!");
 			return true;
 		}
 		if(args.length < 1)
@@ -85,6 +88,10 @@ public class AddonManager implements CommandExecutor
 		}
 		if(args[0].equals("load"))
 		{
+			if(this.usePermissions && !sender.hasPermission("addonmanager.load")){
+				sender.sendMessage(ChatColor.RED+"You don't have permission to use that command!");
+				return true;
+			}
 			if(args.length < 2)
 				sender.sendMessage(ChatColor.RED+"Please specify the addon you want to load");
 			else
@@ -112,6 +119,10 @@ public class AddonManager implements CommandExecutor
 		}
 		else if(args[0].equalsIgnoreCase("enable"))
 		{
+			if(this.usePermissions && !sender.hasPermission("addonmanager.enable")){
+				sender.sendMessage(ChatColor.RED+"You don't have permission to use that command!");
+				return true;
+			}
 			if(args.length < 2)
 				sender.sendMessage(ChatColor.RED+"Please specify the addon you want to load");
 			else if(!this.addons.containsKey(args[1]))
@@ -125,6 +136,10 @@ public class AddonManager implements CommandExecutor
 		}
 		else if(args[0].equalsIgnoreCase("disable"))
 		{
+			if(this.usePermissions && !sender.hasPermission("addonmanager.disable")){
+				sender.sendMessage(ChatColor.RED+"You don't have permission to use that command!");
+				return true;
+			}
 			if(args.length < 2)
 				sender.sendMessage(ChatColor.RED+"Please specify the addon you want to load");
 			else if(!this.addons.containsKey(args[1]))
@@ -138,6 +153,10 @@ public class AddonManager implements CommandExecutor
 		}
 		else if(args[0].equalsIgnoreCase("unload"))
 		{
+			if(this.usePermissions && !sender.hasPermission("addonmanager.unload")){
+				sender.sendMessage(ChatColor.RED+"You don't have permission to use that command!");
+				return true;
+			}
 			if(args.length < 2)
 				sender.sendMessage(ChatColor.RED+"Please specify the addon you want to load");
 			else if(!this.addons.containsKey(args[1]))
@@ -151,6 +170,10 @@ public class AddonManager implements CommandExecutor
 		}
 		else if(args[0].equalsIgnoreCase("reload"))
 		{
+			if(this.usePermissions && !sender.hasPermission("addonmanager.reload")){
+				sender.sendMessage(ChatColor.RED+"You don't have permission to use that command!");
+				return true;
+			}
 			if(args.length < 2)
 				sender.sendMessage(ChatColor.RED+"Please specify the addon you want to reload");
 			else if(!this.addons.containsKey(args[1]))
@@ -170,6 +193,10 @@ public class AddonManager implements CommandExecutor
 		}
 		else if(args[0].equalsIgnoreCase("list"))
 		{
+			if(this.usePermissions && !sender.hasPermission("addonmanager.list")){
+				sender.sendMessage(ChatColor.RED+"You don't have permission to use that command!");
+				return true;
+			}
 			final StringBuilder list = new StringBuilder();
 			for(final Map.Entry<String, AbstractReloadable> e : this.addons.entrySet())
 			{
@@ -186,6 +213,7 @@ public class AddonManager implements CommandExecutor
 
 	public final void loadAll(final Set<String> excludes)
 	{
+		//TODO dependencies
 		final File lisDir = new File(this.plugin.getDataFolder(), "listeners");
 		final File[] files = lisDir.listFiles(new FileFilter()
 		{
