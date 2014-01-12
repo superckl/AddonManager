@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
@@ -15,6 +16,7 @@ import org.bukkit.command.Command;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import common.good.addonmanager.exceptions.InvalidAddonException;
 import common.good.addonmanager.exceptions.UnknownAddonException;
@@ -28,8 +30,9 @@ public class ReloadableAddon extends AbstractReloadable
 
 	private final String name;
 
-	private Set<Listener> listeners;
-	private HashMap<Command, String> commands;
+	private Set<Listener> listeners = new HashSet<Listener>();
+	private HashMap<Command, String> commands = new HashMap<Command, String>();;
+	private Set<BukkitTask> tasks = Collections.synchronizedSet(new HashSet<BukkitTask>());
 
 	ReloadableAddon(final String name)
 	{
@@ -152,12 +155,19 @@ public class ReloadableAddon extends AbstractReloadable
 	{
 		if(this.addon != null)
 		{
+			this.isEnabled = false;
 			for(final Listener listener:this.listeners)
 				HandlerList.unregisterAll(listener);
 			this.listeners.clear();
 			final AddonManagerPlugin plugin = AddonManagerPlugin.getInstance();
 			for(final Entry<Command, String> command:this.commands.entrySet())
 				plugin.unregisterCommand(this, command.getKey(), command.getValue());
+			this.commands.clear();
+			synchronized(this.tasks){
+				for(BukkitTask task:this.tasks)
+					task.cancel();
+				this.tasks.clear();
+			}
 			try{
 				this.addon.onDisable();
 			}catch(final Exception e){
@@ -165,7 +175,6 @@ public class ReloadableAddon extends AbstractReloadable
 				e.printStackTrace();
 			}
 		}
-		this.isEnabled = false;
 	}
 
 	void addCommand(final Command command, final String prefix){
@@ -183,5 +192,25 @@ public class ReloadableAddon extends AbstractReloadable
 	void removeListener(final Listener listener){
 		this.commands.remove(listener);
 	}
-
+	
+	/**
+	 * Internal synchronization
+	 */
+	void addTask(BukkitTask task){
+		synchronized(this.tasks){
+			if(this.isEnabled)
+				this.tasks.add(task);
+			else
+				task.cancel();
+		}
+	}
+	
+	/**
+	 * Internal synchronization
+	 */
+	void removeTask(BukkitTask task){
+		synchronized(this.tasks) {
+			this.tasks.remove(task);
+		}
+	}
 }

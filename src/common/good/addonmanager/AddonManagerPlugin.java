@@ -10,6 +10,7 @@ import org.bukkit.command.CommandMap;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import common.good.addonmanager.exceptions.InvalidAddonException;
 import common.good.addonmanager.storage.Storage;
@@ -170,6 +171,40 @@ public class AddonManagerPlugin extends JavaPlugin{
 			e.printStackTrace();
 		}
 	}
+	
+	/**
+	 * You should NOT need to call this. AddonRunnable will do it for you if you use the built in methods.
+	 * @param addon
+	 * @param task
+	 */
+	synchronized public void registerTask(Addon addon, BukkitTask task){
+		try {
+			final ReloadableAddon reloadable = this.getByAddon(addon);
+			if(reloadable == null)
+				throw new InvalidAddonException("No corresponding ReloadableAddon found for "+addon.getName());
+			reloadable.addTask(task);
+		} catch (InvalidAddonException e) {
+			this.getLogger().severe("Failed to register task for addon "+addon.getName()+".");
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * You should NOT need to call this. AddonRunnable will do it for you if you use the built in methods.
+	 * @param addon
+	 * @param task
+	 */
+	synchronized public void unregisterTask(Addon addon, BukkitTask task){
+		try {
+			final ReloadableAddon reloadable = this.getByAddon(addon);
+			if(reloadable == null)
+				throw new InvalidAddonException("No corresponding ReloadableAddon found for "+addon.getName());
+			reloadable.removeTask(task);
+		} catch (InvalidAddonException e) {
+			this.getLogger().severe("Failed to unregister task for addon "+addon.getName()+". Addon may not unload properly.");
+			e.printStackTrace();
+		}
+	}
 
 	/**
 	 * @return All loaded addons with their corresponding name
@@ -190,7 +225,7 @@ public class AddonManagerPlugin extends JavaPlugin{
 		return null;
 	}
 
-	private ReloadableAddon getByAddon(final Addon addon){
+	synchronized private ReloadableAddon getByAddon(final Addon addon){
 		for(final AbstractReloadable reloadable:this.manager.addons.values())
 			if(addon == reloadable.getAddon())
 				return (ReloadableAddon) reloadable;

@@ -4,18 +4,22 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import common.good.addonmanager.AbstractReloadable;
+import common.good.addonmanager.Addon;
 import common.good.addonmanager.AddonManagerPlugin;
 
 public abstract class AddonRunnable extends BukkitRunnable{
 
 	private volatile boolean finished;
+	private volatile Addon addon;
+	private volatile BukkitTask task;
 
 	/**
 	 * ALWAYS call this when your task is finished running. Otherwise, you may have caused a memory leak. Tsk tsk.
 	 */
 	synchronized public void finished(){
-		//TODO Remove references to BukkitTask here
+		if(this.finished)
+			return;
+		AddonManagerPlugin.getInstance().unregisterTask(this.addon, this.task);
 		this.finished = true;
 	}
 
@@ -31,9 +35,11 @@ public abstract class AddonRunnable extends BukkitRunnable{
 	 * @param addon The addon running this Runnable
 	 * @return The BukkitTask that represents this Runnable
 	 */
-	synchronized public BukkitTask runTask(final AbstractReloadable addon){
-		return super.runTask(AddonManagerPlugin.getInstance());
-		//TODO Store incase addon is disabled
+	synchronized public BukkitTask runTask(final Addon addon){
+		this.task = super.runTask(AddonManagerPlugin.getInstance());
+		this.addon = addon;
+		AddonManagerPlugin.getInstance().registerTask(this.addon, this.task);
+		return this.task;
 	}
 
 	/**
@@ -42,9 +48,11 @@ public abstract class AddonRunnable extends BukkitRunnable{
 	 * @param delay How many ticks to wait before running this Runnable
 	 * @return The BukkitTask that represents this Runnable
 	 */
-	synchronized public BukkitTask runTaskLater(final AbstractReloadable addon, final long delay){
-		return super.runTaskLater(AddonManagerPlugin.getInstance(), delay);
-		//TODO Store incase addon is disabled
+	synchronized public BukkitTask runTaskLater(final Addon addon, final long delay){
+		this.task = super.runTaskLater(AddonManagerPlugin.getInstance(), delay);
+		this.addon = addon;
+		AddonManagerPlugin.getInstance().registerTask(this.addon, this.task);
+		return this.task;
 	}
 
 	/**
@@ -54,36 +62,44 @@ public abstract class AddonRunnable extends BukkitRunnable{
 	 * @param period How many ticks to wait between runs
 	 * @return The BukkitTask that represents this Runnable
 	 */
-	synchronized public BukkitTask runTaskTimer(final AbstractReloadable addon, final long delay, final long period){
-		return super.runTaskTimer(AddonManagerPlugin.getInstance(), delay, period);
-		//TODO Store incase addon is disabled
+	synchronized public BukkitTask runTaskTimer(final Addon addon, final long delay, final long period){
+		this.task = super.runTaskTimer(AddonManagerPlugin.getInstance(), delay, period);
+		this.addon = addon;
+		AddonManagerPlugin.getInstance().registerTask(this.addon, this.task);
+		return this.task;
 	}
 
 	/**
 	 * Asynchronous tasks should never access any API in Bukkit.
-	 * @see {@link #runTask(AbstractReloadable)}
+	 * @see {@link #runTask(Addon)}
 	 */
-	synchronized public BukkitTask runTaskAsynchronously(final AbstractReloadable addon){
-		return super.runTaskAsynchronously(AddonManagerPlugin.getInstance());
-		//TODO Store incase addon is disabled
+	synchronized public BukkitTask runTaskAsynchronously(final Addon addon){
+		this.task = super.runTaskAsynchronously(AddonManagerPlugin.getInstance());
+		this.addon = addon;
+		AddonManagerPlugin.getInstance().registerTask(this.addon, this.task);
+		return this.task;
 	}
 
 	/**
 	 * Asynchronous tasks should never access any API in Bukkit.
-	 * @see {@link #runTaskLater(AbstractReloadable, long)}
+	 * @see {@link #runTaskLater(Addon, long)}
 	 */
-	synchronized public BukkitTask runTaskLaterAsynchronously(final AbstractReloadable addon, final long delay){
-		return super.runTaskLaterAsynchronously(AddonManagerPlugin.getInstance(), delay);
-		//TODO Store incase addon is disabled
+	synchronized public BukkitTask runTaskLaterAsynchronously(final Addon addon, final long delay){
+		this.task = super.runTaskLaterAsynchronously(AddonManagerPlugin.getInstance(), delay);
+		this.addon = addon;
+		AddonManagerPlugin.getInstance().registerTask(this.addon, this.task);
+		return this.task;
 	}
 
 	/**
 	 * Asynchronous tasks should never access any API in Bukkit.
-	 * @see {@link #runTaskTimer(AbstractReloadable, long, long)}
+	 * @see {@link #runTaskTimer(Addon, long, long)}
 	 */
-	synchronized public BukkitTask runTaskTimerAsynchronously(final AbstractReloadable addon, final long delay, final long period){
-		return super.runTaskTimerAsynchronously(AddonManagerPlugin.getInstance(), delay, period);
-		//TODO Store incase addon is disabled
+	synchronized public BukkitTask runTaskTimerAsynchronously(final Addon addon, final long delay, final long period){
+		this.task = super.runTaskTimerAsynchronously(AddonManagerPlugin.getInstance(), delay, period);
+		this.addon = addon;
+		AddonManagerPlugin.getInstance().registerTask(this.addon, this.task);
+		return this.task;
 	}
 	/**
 	 * Shoo! What are you doing here?

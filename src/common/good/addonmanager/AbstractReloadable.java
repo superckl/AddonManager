@@ -14,7 +14,7 @@ public abstract class AbstractReloadable
 
 	protected Addon addon;
 
-	protected boolean isEnabled = false;
+	protected volatile boolean isEnabled = false;
 
 	public Addon getAddon()
 	{
