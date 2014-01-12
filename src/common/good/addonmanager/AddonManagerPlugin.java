@@ -59,7 +59,7 @@ public class AddonManagerPlugin extends JavaPlugin{
 	/**
 	 * Registers a command with bukkit. The first time this method is called after startup, reflection will be done to obtain the CommandMap used by Bukkit.
 	 * @param addon The addon requesting the registration
-	 * @param fallbackPrefix The prefix to append should the commands name be taken
+	 * @param fallbackPrefix The prefix to append should the commands name be taken. Usually the name of the addon.
 	 * @param command The command to register.
 	 * @return Whether or not the registration was succesful.
 	 * @see {@link org.bukkit.command.CommandMap #register(String, Command)}
