@@ -133,7 +133,7 @@ public class AddonManagerPlugin extends JavaPlugin{
 		}
 	}
 	/**
-	 * Registeres a Listener with Bukkit
+	 * Registers a Listener with Bukkit
 	 * @param addon The addon requesting the registration
 	 * @param listener The listener to register
 	 * @throws InvalidAddonException
