@@ -22,6 +22,12 @@ import common.good.addonmanager.exceptions.InvalidAddonException;
 import common.good.addonmanager.exceptions.UnknownAddonException;
 import common.good.addonmanager.storage.ExtendPersistance;
 import common.good.addonmanager.storage.Persistant;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 
 
@@ -50,7 +56,39 @@ public class ReloadableAddon extends AbstractReloadable
 		final File file = new File(plugin.getDataFolder(), String.format("addons/%s.jar", this.name));
 		if(!file.exists())
 			throw new UnknownAddonException(this.name);
-		URL[] urls = new URL[0];
+        
+        JarFile jf = null;
+        List<String> classList = new ArrayList<String>();
+        try
+        {
+            jf = new JarFile(file);
+            Enumeration<JarEntry> entries = jf.entries();
+            if(entries.hasMoreElements())
+            for(JarEntry entry = entries.nextElement(); entries.hasMoreElements(); entry = entries.nextElement())
+            {
+                if(entry.getName().endsWith(".class"))
+                {
+                    String clazz = entry.getName().substring(0, entry.getName().length() - 6);
+                    clazz = clazz.replace('/', '.');
+                    classList.add(clazz);
+                }
+            }
+        }
+        catch(IOException ex)
+        {
+            // Thou shall not pass
+            throw new UnknownAddonException("Failed to read the jar file: "+ex.getMessage());
+        }
+        finally
+        {
+            if(jf != null)
+                try
+                {
+                    jf.close();
+                }catch(IOException ex){}
+        }
+        
+		URL[] urls;
 		try
 		{
 			urls = new URL[]{file.toURI().toURL()};
@@ -61,39 +99,54 @@ public class ReloadableAddon extends AbstractReloadable
 			// Swallow it
 		}
 		Addon a = null;
+        AddonDescriptionFile desc = null;
 		final ClassLoader cloader = new java.net.URLClassLoader(urls, AddonManager.parentLoader);
-		final AddonDescriptionFile desc = new AddonDescriptionFile(file);
-		final String mainClass = desc.getMainClass();
 		try
 		{
-			final Class<?> c = Class.forName(mainClass, true, cloader);
-			final Class<? extends Addon> addonClass = c.asSubclass(Addon.class);
-			a = addonClass.getConstructor(AddonManagerPlugin.class, AddonDescriptionFile.class).newInstance(plugin, desc);
-			//if(a instanceof Listener == false)
-			//	throw new InvalidAddonException(String.format("Addon is not a listener"));
+            for(String clazz : classList)
+            {
+                final Class<?> c = Class.forName(clazz, true, cloader);
+                AddonData data = c.getAnnotation(AddonData.class);
+                if(data == null)
+                    continue;
+                if(data.name().isEmpty())
+                    throw new InvalidAddonException("Addon name should be defined!");
+                
+                // Check for double addons
+                
+                final Class<? extends Addon> addonClass = c.asSubclass(Addon.class);
+                desc = new AddonDescriptionFile(data);
+                a = addonClass.getConstructor(AddonManagerPlugin.class, AddonDescriptionFile.class).newInstance(plugin, desc);
 
-			//Look for StorageRestore and restore where possible
-			final Set<Class<?>> classes = new HashSet<Class<?>>();
-			classes.add(addonClass);
-			if(addonClass.isAnnotationPresent(ExtendPersistance.class))
-				classes.addAll(Arrays.asList(addonClass.getAnnotation(ExtendPersistance.class).classes()));
-			for(final Class<?> check:classes)
-				for(final Field field:check.getDeclaredFields()){
-					final boolean initialFlag = field.isAccessible();
-					field.setAccessible(true);
-					if(field.isAnnotationPresent(Persistant.class)){
-						final Persistant annot = field.getAnnotation(Persistant.class);
-						Object obj = a.getData(Object.class, annot.key());
-						if((obj == null) || (annot.reloadOnly() && !reload) || hardReload){
-							obj = annot.instantiationType().newInstance();
-							a.setData(annot.key(), obj);
-						}
-						field.set(a, obj);
-					}
-					field.setAccessible(initialFlag);
-				}
-			if(!reload)
-				this.addon = a;
+                //Look for StorageRestore and restore where possible
+                final Set<Class<?>> classes = new HashSet<Class<?>>();
+                classes.add(addonClass);
+                if(addonClass.isAnnotationPresent(ExtendPersistance.class))
+                    classes.addAll(Arrays.asList(addonClass.getAnnotation(ExtendPersistance.class).classes()));
+                for(final Class<?> check:classes)
+                {
+                    for(final Field field:check.getDeclaredFields())
+                    {
+                        final boolean initialFlag = field.isAccessible();
+                        field.setAccessible(true);
+                        if(field.isAnnotationPresent(Persistant.class))
+                        {
+                            final Persistant annot = field.getAnnotation(Persistant.class);
+                            Object obj = a.getData(Object.class, annot.key());
+                            if((obj == null) || (annot.reloadOnly() && !reload) || hardReload)
+                            {
+                                obj = annot.instantiationType().newInstance();
+                                a.setData(annot.key(), obj);
+                            }
+                            field.set(a, obj);
+                        }
+                        field.setAccessible(initialFlag);
+                    }
+                }
+                if(!reload)
+                    this.addon = a;
+                break;
+            }
 		}
 		catch(final InvocationTargetException ex)
 		{
@@ -101,7 +154,7 @@ public class ReloadableAddon extends AbstractReloadable
 		}
 		catch(final Throwable ex)
 		{
-			throw new InvalidAddonException(String.format("Invalid addon '%s' found: %s", desc.getName(), ex.getMessage()), ex);
+			throw new InvalidAddonException(String.format("Invalid addon '%s' found: %s", desc != null ? desc.getName() : "unknown", ex.getMessage()), ex);
 		}
 		return a;
 	}

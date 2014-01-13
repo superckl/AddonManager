@@ -30,7 +30,7 @@ public class AddonManager implements CommandExecutor
 
 	private final static Logger log;
 
-	Map<String, AbstractReloadable> addons = new HashMap<String, AbstractReloadable>();
+	private Map<String, AbstractReloadable> addons = new HashMap<String, AbstractReloadable>();
 
 	protected static ClassLoader parentLoader;
 
@@ -105,7 +105,7 @@ public class AddonManager implements CommandExecutor
 					rl.load(this.plugin, false);
 					// Maybe call an onEnable or smth
 
-					this.addons.put(args[1], rl);
+					this.addons.put(rl.getAddon().getName(), rl);
 
 					sender.sendMessage(ChatColor.GREEN+"Loaded the addon.");
 				}
@@ -256,7 +256,7 @@ public class AddonManager implements CommandExecutor
 				rl.load(this.plugin, false);
 				// Maybe call an onEnable or smth
 
-				this.addons.put(name, rl);
+				this.addons.put(rl.getAddon().getName(), rl);
 
 				rl.enable(this.plugin);
 

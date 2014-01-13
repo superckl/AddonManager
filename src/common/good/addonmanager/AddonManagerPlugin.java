@@ -219,14 +219,18 @@ public class AddonManagerPlugin extends JavaPlugin{
 	 * @return The addon retrieved, may be null
 	 */
 	public Addon getAddon(final String name){
-		for(final AbstractReloadable addon:this.manager.getAddons().values())
+        AbstractReloadable ar = this.manager.getAddons().get(name);
+        if(ar == null)
+            return null;
+        return ar.getAddon();
+		/*for(final AbstractReloadable addon:this.manager.getAddons().values())
 			if(addon.getAddon().getName().equals(name))
 				return addon.getAddon();
-		return null;
+		return null;*/
 	}
 
 	synchronized private ReloadableAddon getByAddon(final Addon addon){
-		for(final AbstractReloadable reloadable:this.manager.addons.values())
+		for(final AbstractReloadable reloadable:this.manager.getAddons().values())
 			if(addon == reloadable.getAddon())
 				return (ReloadableAddon) reloadable;
 		return null;
