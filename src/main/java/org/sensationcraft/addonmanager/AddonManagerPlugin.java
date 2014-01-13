@@ -1,4 +1,4 @@
-package common.good.addonmanager;
+package org.sensationcraft.addonmanager;
 
 import java.lang.reflect.Field;
 import java.util.Iterator;
@@ -11,9 +11,8 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
-
-import common.good.addonmanager.exceptions.InvalidAddonException;
-import common.good.addonmanager.storage.Storage;
+import org.sensationcraft.addonmanager.exceptions.InvalidAddonException;
+import org.sensationcraft.addonmanager.storage.Storage;
 
 
 public class AddonManagerPlugin extends JavaPlugin{
@@ -89,9 +88,7 @@ public class AddonManagerPlugin extends JavaPlugin{
 				throw new InvalidAddonException("No corresponding ReloadableAddon found for "+addon.getName());
 			reloadable.addCommand(command, fallbackPrefix);
 			return this.bukkitCommandMap.register(fallbackPrefix == null ? "":fallbackPrefix, command);
-		} catch (NoSuchFieldException | SecurityException
-				| IllegalArgumentException | IllegalAccessException
-				| InvalidAddonException e) {
+		} catch (Exception e) {
 			this.getLogger().severe("Failed to register command "+command.getName()+" for addon "+addon.getName());
 			e.printStackTrace();
 		}

@@ -1,9 +1,8 @@
-package common.good.addonmanager.events;
+package org.sensationcraft.addonmanager.events;
 
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-
-import common.good.addonmanager.AbstractReloadable;
+import org.sensationcraft.addonmanager.AbstractReloadable;
 
 public class AddonMessageEvent extends Event{
 

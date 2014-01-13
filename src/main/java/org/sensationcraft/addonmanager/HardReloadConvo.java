@@ -1,4 +1,4 @@
-package common.good.addonmanager;
+package org.sensationcraft.addonmanager;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;

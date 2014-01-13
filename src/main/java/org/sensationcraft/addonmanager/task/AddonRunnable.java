@@ -1,11 +1,10 @@
-package common.good.addonmanager.task;
+package org.sensationcraft.addonmanager.task;
 
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-
-import common.good.addonmanager.Addon;
-import common.good.addonmanager.AddonManagerPlugin;
+import org.sensationcraft.addonmanager.Addon;
+import org.sensationcraft.addonmanager.AddonManagerPlugin;
 
 /**
  * Works as an interface between the addon and Bukkit. Currently just cancels the task on reload, will be changed so it continues to execute

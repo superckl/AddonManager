@@ -1,4 +1,4 @@
-package common.good.addonmanager;
+package org.sensationcraft.addonmanager;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -17,11 +17,11 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
+import org.sensationcraft.addonmanager.exceptions.InvalidAddonException;
+import org.sensationcraft.addonmanager.exceptions.UnknownAddonException;
+import org.sensationcraft.addonmanager.storage.ExtendPersistance;
+import org.sensationcraft.addonmanager.storage.Persistant;
 
-import common.good.addonmanager.exceptions.InvalidAddonException;
-import common.good.addonmanager.exceptions.UnknownAddonException;
-import common.good.addonmanager.storage.ExtendPersistance;
-import common.good.addonmanager.storage.Persistant;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;

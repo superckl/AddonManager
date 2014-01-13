@@ -1,9 +1,9 @@
-package common.good.addonmanager.events;
+package org.sensationcraft.addonmanager.events;
 
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-public class AddonEnableEvent extends Event{
+public class AddonDisableEvent extends Event{
 
 	//TODO
 	

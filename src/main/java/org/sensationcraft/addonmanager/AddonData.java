@@ -1,4 +1,4 @@
-package common.good.addonmanager.addon.dependencies;
+package org.sensationcraft.addonmanager;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,8 +7,9 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Depend {
-
-	DependencyType type();
-	String[] names();
+public @interface AddonData
+{
+    String name();
+    String version() default "";
+    String[] authors() default {};
 }

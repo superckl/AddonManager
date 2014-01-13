@@ -1,4 +1,4 @@
-package common.good.addonmanager;
+package org.sensationcraft.addonmanager;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -19,9 +19,8 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.conversations.Conversable;
 import org.bukkit.conversations.ConversationFactory;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import common.good.addonmanager.exceptions.InvalidAddonException;
-import common.good.addonmanager.exceptions.UnknownAddonException;
+import org.sensationcraft.addonmanager.exceptions.InvalidAddonException;
+import org.sensationcraft.addonmanager.exceptions.UnknownAddonException;
 
 public class AddonManager implements CommandExecutor
 {

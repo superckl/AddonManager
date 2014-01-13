@@ -1,4 +1,4 @@
-package common.good.addonmanager;
+package org.sensationcraft.addonmanager;
 
 public abstract class Addon
 {

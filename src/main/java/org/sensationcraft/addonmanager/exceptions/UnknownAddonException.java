@@ -1,4 +1,4 @@
-package common.good.addonmanager.exceptions;
+package org.sensationcraft.addonmanager.exceptions;
 
 @SuppressWarnings("serial")
 public class UnknownAddonException extends Exception

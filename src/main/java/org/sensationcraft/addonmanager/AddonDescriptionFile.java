@@ -1,19 +1,6 @@
+package org.sensationcraft.addonmanager;
 
-package common.good.addonmanager;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-
-import org.bukkit.configuration.file.YamlConfiguration;
-
-import common.good.addonmanager.exceptions.InvalidAddonException;
-import java.util.Enumeration;
-
-
+import org.sensationcraft.addonmanager.exceptions.InvalidAddonException;
 
 public class AddonDescriptionFile
 {

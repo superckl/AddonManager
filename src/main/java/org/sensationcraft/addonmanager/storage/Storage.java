@@ -1,4 +1,4 @@
-package common.good.addonmanager.storage;
+package org.sensationcraft.addonmanager.storage;
 
 import java.util.HashMap;
 import java.util.Map;

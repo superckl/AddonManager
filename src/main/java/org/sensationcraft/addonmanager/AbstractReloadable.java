@@ -1,13 +1,10 @@
-package common.good.addonmanager;
+package org.sensationcraft.addonmanager;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
-
-import common.good.addonmanager.exceptions.InvalidAddonException;
-import common.good.addonmanager.exceptions.UnknownAddonException;
-
-
+import org.sensationcraft.addonmanager.exceptions.InvalidAddonException;
+import org.sensationcraft.addonmanager.exceptions.UnknownAddonException;
 
 public abstract class AbstractReloadable
 {
