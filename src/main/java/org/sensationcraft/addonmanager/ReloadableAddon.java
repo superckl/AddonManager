@@ -7,16 +7,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map.Entry;
 import java.util.Set;
 
-import org.bukkit.command.Command;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
+import org.sensationcraft.addonmanager.commands.AddonCommand;
 import org.sensationcraft.addonmanager.exceptions.InvalidAddonException;
 import org.sensationcraft.addonmanager.exceptions.UnknownAddonException;
 import org.sensationcraft.addonmanager.storage.ExtendPersistance;
@@ -37,7 +35,7 @@ public class ReloadableAddon extends AbstractReloadable
 	private final String name;
 
 	private Set<Listener> listeners = new HashSet<Listener>();
-	private HashMap<Command, String> commands = new HashMap<Command, String>();;
+	private Set<AddonCommand> commands = new HashSet<AddonCommand>();;
 	private Set<BukkitTask> tasks = Collections.synchronizedSet(new HashSet<BukkitTask>());
 
 	ReloadableAddon(final String name)
@@ -213,8 +211,8 @@ public class ReloadableAddon extends AbstractReloadable
 				HandlerList.unregisterAll(listener);
 			this.listeners.clear();
 			final AddonManagerPlugin plugin = AddonManagerPlugin.getInstance();
-			for(final Entry<Command, String> command:this.commands.entrySet())
-				plugin.unregisterCommand(this, command.getKey(), command.getValue());
+			for(final AddonCommand command:this.commands)
+				plugin.unregisterCommand(this, command);
 			this.commands.clear();
 			synchronized(this.tasks){
 				for(BukkitTask task:this.tasks)
@@ -230,15 +228,15 @@ public class ReloadableAddon extends AbstractReloadable
 		}
 	}
 
-	void addCommand(final Command command, final String prefix){
-		this.commands.put(command, prefix);
+	void addCommand(final AddonCommand command){
+		this.commands.add(command);
 	}
 
 	void addListener(final Listener listener){
 		this.listeners.add(listener);
 	}
 
-	void removeCommand(final Command command){
+	void removeCommand(final AddonCommand command){
 		this.commands.remove(command);
 	}
 

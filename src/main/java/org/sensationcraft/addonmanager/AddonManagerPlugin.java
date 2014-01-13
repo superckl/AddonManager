@@ -10,8 +10,11 @@ import org.bukkit.command.CommandMap;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.sensationcraft.addonmanager.commands.AddonCommand;
 import org.sensationcraft.addonmanager.exceptions.InvalidAddonException;
+import org.sensationcraft.addonmanager.listeners.EnableDisableListener;
 import org.sensationcraft.addonmanager.storage.Storage;
 
 
@@ -34,6 +37,17 @@ public class AddonManagerPlugin extends JavaPlugin{
 		this.getLogger().info("Loading addons...");
 		this.manager = new AddonManager(this, this.getConfig().getBoolean("Use Permissions"));
 		this.getServer().getPluginCommand("addons").setExecutor(this.manager);
+		new BukkitRunnable(){
+
+			@Override
+			public void run() {
+				// TODO Check enabled plugins, Bukkit must be done enabling, manage depending addons accordingly
+				
+			}
+			
+		}.runTask(this);
+		this.getLogger().info("Registering listeners...");
+		this.getServer().getPluginManager().registerEvents(new EnableDisableListener(), this); //Do it after loading addons to avoid addon events...
 	}
 
 	@Override
@@ -64,7 +78,7 @@ public class AddonManagerPlugin extends JavaPlugin{
 	 * @return Whether or not the registration didn't use the fallback prefix.
 	 * @see {@link org.bukkit.command.CommandMap #register(String, Command)}
 	 */
-	public boolean registerCommand(final Addon addon, final String fallbackPrefix, final Command command){
+	public boolean registerCommand(final Addon addon, final AddonCommand command){
 		try {
 			if(this.bukkitCommandMap == null){
 				final Field f = this.getServer().getClass().getDeclaredField("commandMap");
@@ -81,12 +95,13 @@ public class AddonManagerPlugin extends JavaPlugin{
 				f.setAccessible(true);
 				this.aliases = (Set<String>) f.get(this.bukkitCommandMap);
 			}
+			String fallbackPrefix = command.getFallbackPrefix();
 			if((fallbackPrefix == null) || fallbackPrefix.isEmpty())
 				throw new IllegalArgumentException("Addon "+addon.getName()+" tried to register a command with a null or empty fallback prefix!");
 			final ReloadableAddon reloadable = this.getByAddon(addon);
 			if(reloadable == null)
 				throw new InvalidAddonException("No corresponding ReloadableAddon found for "+addon.getName());
-			reloadable.addCommand(command, fallbackPrefix);
+			reloadable.addCommand(command);
 			return this.bukkitCommandMap.register(fallbackPrefix == null ? "":fallbackPrefix, command);
 		} catch (Exception e) {
 			this.getLogger().severe("Failed to register command "+command.getName()+" for addon "+addon.getName());
@@ -102,20 +117,20 @@ public class AddonManagerPlugin extends JavaPlugin{
 	 * @param prefix The fallback prefix used when registering the command
 	 * @see {@link #registerCommand(Addon, String, Command)}
 	 */
-	public void unregisterCommand(final Addon addon, final Command command, final String prefix){
+	public void unregisterCommand(final Addon addon, final AddonCommand command){
 		try {
 			final ReloadableAddon reloadable = this.getByAddon(addon);
 			if(reloadable == null)
 				throw new InvalidAddonException("No corresponding ReloadableAddon found for "+addon.getName());
-			this.unregisterCommand(reloadable, command, prefix);
+			this.unregisterCommand(reloadable, command);
 		} catch (final InvalidAddonException e) {
 			this.getLogger().severe("Failed to unregister command "+command.getName()+" for addon "+addon.getName()+". Addon may not unload properly.");
 			e.printStackTrace();
 		}
 	}
 
-	void unregisterCommand(final ReloadableAddon addon, final Command command, final String prefix){
-		this.removeFromBukkit(command, prefix);
+	void unregisterCommand(final ReloadableAddon addon, final AddonCommand command){
+		this.removeFromBukkit(command, command.getFallbackPrefix());
 		addon.removeCommand(command);
 	}
 
