@@ -21,15 +21,15 @@ public class AddonUser {
 		})
 	protected Player base;
 
-	private final MoneyManager moneyManager;
+	private final SimpleMoneyManager simpleMoneyManager;
 
 	public AddonUser(final Player player){
 		this.base = player;
-		this.moneyManager = new MoneyManager(this);
+		this.simpleMoneyManager = new SimpleMoneyManager(this);
 	}
 
-	public MoneyManager getMoneyManager() {
-		return this.moneyManager;
+	public SimpleMoneyManager getMoneyManager() {
+		return this.simpleMoneyManager;
 	}
 
 }
