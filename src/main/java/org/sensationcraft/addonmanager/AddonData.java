@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface AddonData
 {
-    String name();
-    String version() default "";
-    String[] authors() default {};
+	String name();
+	String version() default "";
+	String[] authors() default {};
 }

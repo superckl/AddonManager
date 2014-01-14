@@ -1,31 +1,33 @@
 package org.sensationcraft.addonmanager;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
+import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.sensationcraft.addonmanager.commands.AddonCommand;
+import org.sensationcraft.addonmanager.events.AddonDisableEvent;
+import org.sensationcraft.addonmanager.events.AddonEnableEvent;
 import org.sensationcraft.addonmanager.exceptions.InvalidAddonException;
 import org.sensationcraft.addonmanager.exceptions.UnknownAddonException;
 import org.sensationcraft.addonmanager.storage.ExtendPersistance;
 import org.sensationcraft.addonmanager.storage.Persistant;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 
 
@@ -34,9 +36,9 @@ public class ReloadableAddon extends AbstractReloadable
 
 	private final String name;
 
-	private Set<Listener> listeners = new HashSet<Listener>();
-	private Set<AddonCommand> commands = new HashSet<AddonCommand>();;
-	private Set<BukkitTask> tasks = Collections.synchronizedSet(new HashSet<BukkitTask>());
+	private final Set<Listener> listeners = new HashSet<Listener>();
+	private final Set<AddonCommand> commands = new HashSet<AddonCommand>();;
+	private final Set<BukkitTask> tasks = Collections.synchronizedSet(new HashSet<BukkitTask>());
 
 	ReloadableAddon(final String name)
 	{
@@ -54,38 +56,36 @@ public class ReloadableAddon extends AbstractReloadable
 		final File file = new File(plugin.getDataFolder(), String.format("addons/%s.jar", this.name));
 		if(!file.exists())
 			throw new UnknownAddonException(this.name);
-        
-        JarFile jf = null;
-        List<String> classList = new ArrayList<String>();
-        try
-        {
-            jf = new JarFile(file);
-            Enumeration<JarEntry> entries = jf.entries();
-            if(entries.hasMoreElements())
-            for(JarEntry entry = entries.nextElement(); entries.hasMoreElements(); entry = entries.nextElement())
-            {
-                if(entry.getName().endsWith(".class"))
-                {
-                    String clazz = entry.getName().substring(0, entry.getName().length() - 6);
-                    clazz = clazz.replace('/', '.');
-                    classList.add(clazz);
-                }
-            }
-        }
-        catch(IOException ex)
-        {
-            // Thou shall not pass
-            throw new UnknownAddonException("Failed to read the jar file: "+ex.getMessage());
-        }
-        finally
-        {
-            if(jf != null)
-                try
-                {
-                    jf.close();
-                }catch(IOException ex){}
-        }
-        
+
+		JarFile jf = null;
+		final List<String> classList = new ArrayList<String>();
+		try
+		{
+			jf = new JarFile(file);
+			final Enumeration<JarEntry> entries = jf.entries();
+			if(entries.hasMoreElements())
+				for(JarEntry entry = entries.nextElement(); entries.hasMoreElements(); entry = entries.nextElement())
+					if(entry.getName().endsWith(".class"))
+					{
+						String clazz = entry.getName().substring(0, entry.getName().length() - 6);
+						clazz = clazz.replace('/', '.');
+						classList.add(clazz);
+					}
+		}
+		catch(final IOException ex)
+		{
+			// Thou shall not pass
+			throw new UnknownAddonException("Failed to read the jar file: "+ex.getMessage());
+		}
+		finally
+		{
+			if(jf != null)
+				try
+			{
+					jf.close();
+			}catch(final IOException ex){}
+		}
+
 		URL[] urls;
 		try
 		{
@@ -97,54 +97,52 @@ public class ReloadableAddon extends AbstractReloadable
 			// Swallow it
 		}
 		Addon a = null;
-        AddonDescriptionFile desc = null;
+		AddonDescriptionFile desc = null;
 		final ClassLoader cloader = new java.net.URLClassLoader(urls, AddonManager.parentLoader);
 		try
 		{
-            for(String clazz : classList)
-            {
-                final Class<?> c = Class.forName(clazz, true, cloader);
-                AddonData data = c.getAnnotation(AddonData.class);
-                if(data == null)
-                    continue;
-                if(data.name().isEmpty())
-                    throw new InvalidAddonException("Addon name should be defined!");
-                
-                // Check for double addons
-                
-                final Class<? extends Addon> addonClass = c.asSubclass(Addon.class);
-                desc = new AddonDescriptionFile(data);
-                a = addonClass.getConstructor(AddonManagerPlugin.class, AddonDescriptionFile.class).newInstance(plugin, desc);
+			for(final String clazz : classList)
+			{
+				final Class<?> c = Class.forName(clazz, true, cloader);
+				final AddonData data = c.getAnnotation(AddonData.class);
+				if(data == null)
+					continue;
+				if(data.name().isEmpty())
+					throw new InvalidAddonException("Addon name should be defined!");
 
-                //Look for StorageRestore and restore where possible
-                final Set<Class<?>> classes = new HashSet<Class<?>>();
-                classes.add(addonClass);
-                if(addonClass.isAnnotationPresent(ExtendPersistance.class))
-                    classes.addAll(Arrays.asList(addonClass.getAnnotation(ExtendPersistance.class).classes()));
-                for(final Class<?> check:classes)
-                {
-                    for(final Field field:check.getDeclaredFields())
-                    {
-                        final boolean initialFlag = field.isAccessible();
-                        field.setAccessible(true);
-                        if(field.isAnnotationPresent(Persistant.class))
-                        {
-                            final Persistant annot = field.getAnnotation(Persistant.class);
-                            Object obj = a.getData(Object.class, annot.key());
-                            if((obj == null) || (annot.reloadOnly() && !reload) || hardReload)
-                            {
-                                obj = annot.instantiationType().newInstance();
-                                a.setData(annot.key(), obj);
-                            }
-                            field.set(a, obj);
-                        }
-                        field.setAccessible(initialFlag);
-                    }
-                }
-                if(!reload)
-                    this.addon = a;
-                break;
-            }
+				// Check for double addons
+
+				final Class<? extends Addon> addonClass = c.asSubclass(Addon.class);
+				desc = new AddonDescriptionFile(data);
+				a = addonClass.getConstructor(AddonManagerPlugin.class, AddonDescriptionFile.class).newInstance(plugin, desc);
+
+				//Look for StorageRestore and restore where possible
+				final Set<Class<?>> classes = new HashSet<Class<?>>();
+				classes.add(addonClass);
+				if(addonClass.isAnnotationPresent(ExtendPersistance.class))
+					classes.addAll(Arrays.asList(addonClass.getAnnotation(ExtendPersistance.class).classes()));
+				for(final Class<?> check:classes)
+					for(final Field field:check.getDeclaredFields())
+					{
+						final boolean initialFlag = field.isAccessible();
+						field.setAccessible(true);
+						if(field.isAnnotationPresent(Persistant.class))
+						{
+							final Persistant annot = field.getAnnotation(Persistant.class);
+							Object obj = a.getData(Object.class, annot.key());
+							if((obj == null) || (annot.reloadOnly() && !reload) || hardReload)
+							{
+								obj = annot.instantiationType().newInstance();
+								a.setData(annot.key(), obj);
+							}
+							field.set(a, obj);
+						}
+						field.setAccessible(initialFlag);
+					}
+				if(!reload)
+					this.addon = a;
+				break;
+			}
 		}
 		catch(final InvocationTargetException ex)
 		{
@@ -189,6 +187,7 @@ public class ReloadableAddon extends AbstractReloadable
 		try{
 			this.addon.onEnable();
 			this.isEnabled = true;
+			Bukkit.getPluginManager().callEvent(new AddonEnableEvent(this.addon));
 		}catch(final Exception e){
 			AddonManagerPlugin.getInstance().getLogger().severe("Error while enabling addon "+this.getAddon().getName());
 			e.printStackTrace();
@@ -215,12 +214,13 @@ public class ReloadableAddon extends AbstractReloadable
 				plugin.unregisterCommand(this, command);
 			this.commands.clear();
 			synchronized(this.tasks){
-				for(BukkitTask task:this.tasks)
+				for(final BukkitTask task:this.tasks)
 					task.cancel();
 				this.tasks.clear();
 			}
 			try{
 				this.addon.onDisable();
+				Bukkit.getPluginManager().callEvent(new AddonDisableEvent(this.addon));
 			}catch(final Exception e){
 				AddonManagerPlugin.getInstance().getLogger().severe("Error while disabling addon "+this.getAddon().getName());
 				e.printStackTrace();
@@ -243,11 +243,11 @@ public class ReloadableAddon extends AbstractReloadable
 	void removeListener(final Listener listener){
 		this.commands.remove(listener);
 	}
-	
+
 	/**
 	 * Internal synchronization
 	 */
-	void addTask(BukkitTask task){
+	void addTask(final BukkitTask task){
 		synchronized(this.tasks){
 			if(this.isEnabled)
 				this.tasks.add(task);
@@ -255,11 +255,11 @@ public class ReloadableAddon extends AbstractReloadable
 				task.cancel();
 		}
 	}
-	
+
 	/**
 	 * Internal synchronization
 	 */
-	void removeTask(BukkitTask task){
+	void removeTask(final BukkitTask task){
 		synchronized(this.tasks) {
 			this.tasks.remove(task);
 		}

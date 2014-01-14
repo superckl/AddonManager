@@ -12,7 +12,7 @@ public class HardReloadConvo extends BooleanPrompt
 	private final AbstractReloadable addon;
 	private final CommandSender sender;
 
-	public HardReloadConvo(final AddonManagerPlugin pl, AbstractReloadable addon, CommandSender sender)
+	public HardReloadConvo(final AddonManagerPlugin pl, final AbstractReloadable addon, final CommandSender sender)
 	{
 		this.pl = pl;
 		this.addon = addon;

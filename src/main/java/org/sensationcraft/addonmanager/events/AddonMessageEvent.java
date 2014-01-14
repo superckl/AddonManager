@@ -8,16 +8,16 @@ public class AddonMessageEvent<K> extends Event{
 
 	private final AbstractReloadable addon;
 	private K message; //Let them choose! :P
-	
-	public AddonMessageEvent(final AbstractReloadable addon, K message){
+
+	public AddonMessageEvent(final AbstractReloadable addon, final K message){
 		this.addon = addon;
 		this.message = message;
 	}
-	
-	public void setMessage(K message){
+
+	public void setMessage(final K message){
 		this.message = message;
 	}
-	
+
 	public K getMessage(){
 		return this.message;
 	}

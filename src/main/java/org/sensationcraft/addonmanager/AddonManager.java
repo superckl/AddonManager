@@ -29,7 +29,7 @@ public class AddonManager implements CommandExecutor
 
 	private final static Logger log;
 
-	private Map<String, AbstractReloadable> addons = new HashMap<String, AbstractReloadable>();
+	private final Map<String, AbstractReloadable> addons = new HashMap<String, AbstractReloadable>();
 
 	protected static ClassLoader parentLoader;
 
@@ -210,7 +210,7 @@ public class AddonManager implements CommandExecutor
 				list.delete(list.length()-2, list.length());
 			sender.sendMessage(String.format("Addons: %s", list.toString()));
 		}else if(args[0].equalsIgnoreCase("hardreload")){
-			if(sender instanceof Conversable == false){
+			if((sender instanceof Conversable) == false){
 				sender.sendMessage(ChatColor.RED+"What are you?");
 				return true;
 			}

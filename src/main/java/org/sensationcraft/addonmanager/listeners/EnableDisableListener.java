@@ -11,23 +11,23 @@ import org.sensationcraft.addonmanager.events.AddonEnableEvent;
 public class EnableDisableListener implements Listener{
 
 	@EventHandler(priority = EventPriority.MONITOR)
-	public void onPluginEnable(PluginEnableEvent e){
+	public void onPluginEnable(final PluginEnableEvent e){
 		//TODO if addon depends, enable addon if all depends sasitified
 	}
-	
+
 	@EventHandler(priority = EventPriority.MONITOR)
-	public void onPluginDisable(PluginDisableEvent e){
+	public void onPluginDisable(final PluginDisableEvent e){
 		//TODO If addon depends, uh-oh, disable the addon if hard depend
 	}
-	
+
 	@EventHandler(priority = EventPriority.MONITOR)
-	public void onAddonEnable(AddonEnableEvent e){
+	public void onAddonEnable(final AddonEnableEvent e){
 		//TODO
 	}
-	
+
 	@EventHandler(priority = EventPriority.MONITOR)
-	public void onAddonDisable(AddonDisableEvent e){
+	public void onAddonDisable(final AddonDisableEvent e){
 		//TODO
 	}
-	
+
 }

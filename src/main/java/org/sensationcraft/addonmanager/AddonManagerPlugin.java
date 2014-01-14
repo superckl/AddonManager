@@ -1,14 +1,18 @@
 package org.sensationcraft.addonmanager;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -16,9 +20,10 @@ import org.sensationcraft.addonmanager.commands.AddonCommand;
 import org.sensationcraft.addonmanager.exceptions.InvalidAddonException;
 import org.sensationcraft.addonmanager.listeners.EnableDisableListener;
 import org.sensationcraft.addonmanager.storage.Storage;
+import org.sensationcraft.addonmanager.users.AddonUser;
 
 
-public class AddonManagerPlugin extends JavaPlugin{
+public class AddonManagerPlugin extends JavaPlugin implements Listener{
 
 	private static AddonManagerPlugin instance;
 	private final Storage data = new Storage();
@@ -27,6 +32,7 @@ public class AddonManagerPlugin extends JavaPlugin{
 	private CommandMap bukkitCommandMap;
 	private Map<String, Command> knownCommands;
 	private Set<String> aliases;
+	private final Map<String, AddonUser> users = new HashMap<String, AddonUser>();
 
 	private final String aliasMatcher = "[%s:]*[%s]";
 
@@ -42,11 +48,12 @@ public class AddonManagerPlugin extends JavaPlugin{
 			@Override
 			public void run() {
 				// TODO Check enabled plugins, Bukkit must be done enabling, manage depending addons accordingly
-				
+
 			}
-			
+
 		}.runTask(this);
 		this.getLogger().info("Registering listeners...");
+		this.getServer().getPluginManager().registerEvents(this, this); //User events
 		this.getServer().getPluginManager().registerEvents(new EnableDisableListener(), this); //Do it after loading addons to avoid addon events...
 	}
 
@@ -95,7 +102,7 @@ public class AddonManagerPlugin extends JavaPlugin{
 				f.setAccessible(true);
 				this.aliases = (Set<String>) f.get(this.bukkitCommandMap);
 			}
-			String fallbackPrefix = command.getFallbackPrefix();
+			final String fallbackPrefix = command.getFallbackPrefix();
 			if((fallbackPrefix == null) || fallbackPrefix.isEmpty())
 				throw new IllegalArgumentException("Addon "+addon.getName()+" tried to register a command with a null or empty fallback prefix!");
 			final ReloadableAddon reloadable = this.getByAddon(addon);
@@ -103,7 +110,7 @@ public class AddonManagerPlugin extends JavaPlugin{
 				throw new InvalidAddonException("No corresponding ReloadableAddon found for "+addon.getName());
 			reloadable.addCommand(command);
 			return this.bukkitCommandMap.register(fallbackPrefix == null ? "":fallbackPrefix, command);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			this.getLogger().severe("Failed to register command "+command.getName()+" for addon "+addon.getName());
 			e.printStackTrace();
 		}
@@ -183,36 +190,36 @@ public class AddonManagerPlugin extends JavaPlugin{
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * You should NOT need to call this. AddonRunnable will do it for you if you use the built in methods.
 	 * @param addon
 	 * @param task
 	 */
-	synchronized public void registerTask(Addon addon, BukkitTask task){
+	synchronized public void registerTask(final Addon addon, final BukkitTask task){
 		try {
 			final ReloadableAddon reloadable = this.getByAddon(addon);
 			if(reloadable == null)
 				throw new InvalidAddonException("No corresponding ReloadableAddon found for "+addon.getName());
 			reloadable.addTask(task);
-		} catch (InvalidAddonException e) {
+		} catch (final InvalidAddonException e) {
 			this.getLogger().severe("Failed to register task for addon "+addon.getName()+".");
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * You should NOT need to call this. AddonRunnable will do it for you if you use the built in methods.
 	 * @param addon
 	 * @param task
 	 */
-	synchronized public void unregisterTask(Addon addon, BukkitTask task){
+	synchronized public void unregisterTask(final Addon addon, final BukkitTask task){
 		try {
 			final ReloadableAddon reloadable = this.getByAddon(addon);
 			if(reloadable == null)
 				throw new InvalidAddonException("No corresponding ReloadableAddon found for "+addon.getName());
 			reloadable.removeTask(task);
-		} catch (InvalidAddonException e) {
+		} catch (final InvalidAddonException e) {
 			this.getLogger().severe("Failed to unregister task for addon "+addon.getName()+". Addon may not unload properly.");
 			e.printStackTrace();
 		}
@@ -231,10 +238,10 @@ public class AddonManagerPlugin extends JavaPlugin{
 	 * @return The addon retrieved, may be null
 	 */
 	public Addon getAddon(final String name){
-        AbstractReloadable ar = this.manager.getAddons().get(name);
-        if(ar == null)
-            return null;
-        return ar.getAddon();
+		final AbstractReloadable ar = this.manager.getAddons().get(name);
+		if(ar == null)
+			return null;
+		return ar.getAddon();
 		/*for(final AbstractReloadable addon:this.manager.getAddons().values())
 			if(addon.getAddon().getName().equals(name))
 				return addon.getAddon();
@@ -246,5 +253,10 @@ public class AddonManagerPlugin extends JavaPlugin{
 			if(addon == reloadable.getAddon())
 				return (ReloadableAddon) reloadable;
 		return null;
+	}
+
+	@EventHandler(priority = EventPriority.LOWEST)
+	public void onPlayerJoin(final PlayerJoinEvent e){
+		this.users.put(e.getPlayer().getName(), new AddonUser(e.getPlayer()));
 	}
 }

@@ -6,12 +6,12 @@ import org.bukkit.command.Command;
 
 public abstract class AddonCommand extends Command{
 
-	protected AddonCommand(String name) {
+	protected AddonCommand(final String name) {
 		super(name);
 	}
-	
-	protected AddonCommand(String name, String description,
-			String usageMessage, List<String> aliases) {
+
+	protected AddonCommand(final String name, final String description,
+			final String usageMessage, final List<String> aliases) {
 		super(name, description, usageMessage, aliases);
 	}
 
