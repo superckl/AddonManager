@@ -6,9 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface Depend {
+@Target(ElementType.FIELD)
+public @interface PluginDepends {
 
-	DependencyType type();
-	String[] names();
 }

@@ -21,6 +21,8 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
+import org.sensationcraft.addonmanager.addon.dependencies.DependencyManager;
+import org.sensationcraft.addonmanager.addon.dependencies.DependencyStatus;
 import org.sensationcraft.addonmanager.commands.AddonCommand;
 import org.sensationcraft.addonmanager.events.AddonDisableEvent;
 import org.sensationcraft.addonmanager.events.AddonEnableEvent;
@@ -44,6 +46,79 @@ public class ReloadableAddon extends AbstractReloadable
 	{
 		this.name = name;
 	}
+	
+	@Override
+	public DependencyStatus preLoad(AddonManagerPlugin plugin) throws UnknownAddonException {
+		final File file = new File(plugin.getDataFolder(), String.format("addons/%s.jar", this.name));
+		if(!file.exists())
+			throw new UnknownAddonException(this.name);
+
+		JarFile jf = null;
+		final List<String> classList = new ArrayList<String>();
+		try
+		{
+			jf = new JarFile(file);
+			final Enumeration<JarEntry> entries = jf.entries();
+			if(entries.hasMoreElements())
+				for(JarEntry entry = entries.nextElement(); entries.hasMoreElements(); entry = entries.nextElement())
+					if(entry.getName().endsWith(".class"))
+					{
+						String clazz = entry.getName().substring(0, entry.getName().length() - 6);
+						clazz = clazz.replace('/', '.');
+						classList.add(clazz);
+					}
+		}
+		catch(final IOException ex)
+		{
+			// Thou shall not pass
+			throw new UnknownAddonException("Failed to read the jar file: "+ex.getMessage());
+		}
+		finally
+		{
+			if(jf != null)
+				try
+			{
+					jf.close();
+			}catch(final IOException ex){}
+		}
+
+		URL[] urls;
+		try
+		{
+			urls = new URL[]{file.toURI().toURL()};
+		}
+		catch(final MalformedURLException ex)
+		{
+			return DependencyStatus.NONE;
+			// Swallow it
+		}
+		final ClassLoader cloader = new java.net.URLClassLoader(urls, AddonManager.parentLoader);
+		Set<Class<? extends Addon>> addonClasses = new HashSet<Class<? extends Addon>>();
+		try {
+			for(final String clazz : classList)
+			{
+				final Class<?> c = Class.forName(clazz, true, cloader);
+				final AddonData data = c.getAnnotation(AddonData.class);
+				if(data == null)
+					continue;
+				if(data.name().isEmpty())
+					throw new InvalidAddonException("Addon name should be defined!");
+
+				//TODO Check for double addons
+				if(!Addon.class.isAssignableFrom(c))
+					throw new InvalidAddonException("Addon "+data.name()+" has an inalid Addon class.");
+				addonClasses.add(c.asSubclass(Addon.class));
+			}
+			this.addonClasses = addonClasses;
+			this.dependencyManager = DependencyManager.evaluate(plugin, this, addonClasses, this.name);
+			return this.dependencyManager.getDependencyStatus();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (InvalidAddonException e) {
+			e.printStackTrace();
+		}
+		return DependencyStatus.NONE;
+	}
 
 	/**
 	 * Loads an addon from the disk.
@@ -53,7 +128,7 @@ public class ReloadableAddon extends AbstractReloadable
 	@Override
 	public Addon load(final AddonManagerPlugin plugin, final boolean reload, final boolean hardReload) throws UnknownAddonException, InvalidAddonException
 	{
-		final File file = new File(plugin.getDataFolder(), String.format("addons/%s.jar", this.name));
+		/*final File file = new File(plugin.getDataFolder(), String.format("addons/%s.jar", this.name));
 		if(!file.exists())
 			throw new UnknownAddonException(this.name);
 
@@ -98,21 +173,17 @@ public class ReloadableAddon extends AbstractReloadable
 		}
 		Addon a = null;
 		AddonDescriptionFile desc = null;
-		final ClassLoader cloader = new java.net.URLClassLoader(urls, AddonManager.parentLoader);
+		final ClassLoader cloader = new java.net.URLClassLoader(urls, AddonManager.parentLoader);*/
+		Addon a = null;
+		AddonDescriptionFile desc = null;
 		try
 		{
-			for(final String clazz : classList)
-			{
-				final Class<?> c = Class.forName(clazz, true, cloader);
-				final AddonData data = c.getAnnotation(AddonData.class);
-				if(data == null)
-					continue;
-				if(data.name().isEmpty())
-					throw new InvalidAddonException("Addon name should be defined!");
-
-				// Check for double addons
-
-				final Class<? extends Addon> addonClass = c.asSubclass(Addon.class);
+			if(this.dependencyManager.getDependencyStatus() == DependencyStatus.NONE)
+				throw new IllegalStateException("Load was called for addon "+this.name+" but dependencies are not sastified.");
+			if(this.addonClasses == null || this.addonClasses.isEmpty())
+				throw new IllegalStateException("load was called for addon "+this.name+" but no addon classes were found.");
+			for(Class<? extends Addon> addonClass:this.addonClasses){
+				AddonData data = addonClass.getAnnotation(AddonData.class);
 				desc = new AddonDescriptionFile(data);
 				a = addonClass.getConstructor(AddonManagerPlugin.class, AddonDescriptionFile.class).newInstance(plugin, desc);
 
@@ -141,7 +212,7 @@ public class ReloadableAddon extends AbstractReloadable
 					}
 				if(!reload)
 					this.addon = a;
-				break;
+				//break; NOTE: We can load more than one? Maybe?
 			}
 		}
 		catch(final InvocationTargetException ex)
@@ -220,11 +291,11 @@ public class ReloadableAddon extends AbstractReloadable
 			}
 			try{
 				this.addon.onDisable();
-				Bukkit.getPluginManager().callEvent(new AddonDisableEvent(this.addon));
 			}catch(final Exception e){
 				AddonManagerPlugin.getInstance().getLogger().severe("Error while disabling addon "+this.getAddon().getName());
 				e.printStackTrace();
 			}
+			Bukkit.getPluginManager().callEvent(new AddonDisableEvent(this.addon));
 		}
 	}
 

@@ -1,18 +1,16 @@
 package org.sensationcraft.addonmanager.events;
 
-import java.math.BigDecimal;
-
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.sensationcraft.addonmanager.users.AddonUser;
 
 public class MoneyChangeEvent extends Event{
 
-	private BigDecimal to;
-	private final BigDecimal from;
+	private double to;
+	private final double from;
 	private final AddonUser user;
 
-	public MoneyChangeEvent(final AddonUser user, final BigDecimal to, final BigDecimal from){
+	public MoneyChangeEvent(final AddonUser user, final double to, final double from){
 		this.user = user;
 		this.to = to;
 		this.from = from;
@@ -23,15 +21,15 @@ public class MoneyChangeEvent extends Event{
 		return new HandlerList();
 	}
 
-	public BigDecimal getTo() {
+	public double getTo() {
 		return this.to;
 	}
 
-	public void setTo(final BigDecimal to) {
+	public void setTo(final double to) {
 		this.to = to;
 	}
 
-	public BigDecimal getFrom() {
+	public double getFrom() {
 		return this.from;
 	}
 

@@ -78,6 +78,7 @@ public class AddonManager implements CommandExecutor
 	@Override
 	public boolean onCommand(final CommandSender sender, final Command cmnd, final String label, final String[] args)
 	{
+		//TODO change to load and preload
 		if(!this.usePermissions && ((sender instanceof ConsoleCommandSender) == false))
 		{
 			sender.sendMessage(ChatColor.RED+"You don't have permission to use that command!");
@@ -233,7 +234,7 @@ public class AddonManager implements CommandExecutor
 
 	public final void loadAll(final Set<String> excludes)
 	{
-		//TODO dependencies
+		//TODO change to load and preload
 		final File lisDir = new File(this.plugin.getDataFolder(), "addons");
 		final File[] files = lisDir.listFiles(new FileFilter()
 		{

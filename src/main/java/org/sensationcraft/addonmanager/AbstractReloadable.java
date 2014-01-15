@@ -1,8 +1,13 @@
 package org.sensationcraft.addonmanager;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
+import org.sensationcraft.addonmanager.addon.dependencies.DependencyManager;
+import org.sensationcraft.addonmanager.addon.dependencies.DependencyStatus;
 import org.sensationcraft.addonmanager.exceptions.InvalidAddonException;
 import org.sensationcraft.addonmanager.exceptions.UnknownAddonException;
 
@@ -12,6 +17,10 @@ public abstract class AbstractReloadable
 	protected Addon addon;
 
 	protected volatile boolean isEnabled = false;
+	
+	protected DependencyManager dependencyManager;
+	
+	protected Set<Class<? extends Addon>> addonClasses = new HashSet<Class<? extends Addon>>();
 
 	public Addon getAddon()
 	{
@@ -22,6 +31,9 @@ public abstract class AbstractReloadable
 	public Addon load(final AddonManagerPlugin plugin, final boolean reload) throws UnknownAddonException, InvalidAddonException{
 		return this.load(plugin, reload, false);
 	}
+	
+	public abstract DependencyStatus preLoad(final AddonManagerPlugin plugin) throws UnknownAddonException;
+	
 	public abstract void load(final Addon addon);
 
 	public abstract void unload();
@@ -61,4 +73,8 @@ public abstract class AbstractReloadable
 	}
 
 	public abstract void disable();
+
+	public DependencyManager getDependencyManager() {
+		return dependencyManager;
+	}
 }
