@@ -46,9 +46,9 @@ public class ReloadableAddon extends AbstractReloadable
 	{
 		this.name = name;
 	}
-	
+
 	@Override
-	public DependencyStatus preLoad(AddonManagerPlugin plugin) throws UnknownAddonException {
+	public DependencyStatus preLoad(final AddonManagerPlugin plugin) throws UnknownAddonException {
 		final File file = new File(plugin.getDataFolder(), String.format("addons/%s.jar", this.name));
 		if(!file.exists())
 			throw new UnknownAddonException(this.name);
@@ -93,7 +93,7 @@ public class ReloadableAddon extends AbstractReloadable
 			// Swallow it
 		}
 		final ClassLoader cloader = new java.net.URLClassLoader(urls, AddonManager.parentLoader);
-		Set<Class<? extends Addon>> addonClasses = new HashSet<Class<? extends Addon>>();
+		final Set<Class<? extends Addon>> addonClasses = new HashSet<Class<? extends Addon>>();
 		try {
 			for(final String clazz : classList)
 			{
@@ -112,9 +112,9 @@ public class ReloadableAddon extends AbstractReloadable
 			this.addonClasses = addonClasses;
 			this.dependencyManager = DependencyManager.evaluate(plugin, this, addonClasses, this.name);
 			return this.dependencyManager.getDependencyStatus();
-		} catch (ClassNotFoundException e) {
+		} catch (final ClassNotFoundException e) {
 			e.printStackTrace();
-		} catch (InvalidAddonException e) {
+		} catch (final InvalidAddonException e) {
 			e.printStackTrace();
 		}
 		return DependencyStatus.NONE;
@@ -180,10 +180,10 @@ public class ReloadableAddon extends AbstractReloadable
 		{
 			if(this.dependencyManager.getDependencyStatus() == DependencyStatus.NONE)
 				throw new IllegalStateException("Load was called for addon "+this.name+" but dependencies are not sastified.");
-			if(this.addonClasses == null || this.addonClasses.isEmpty())
+			if((this.addonClasses == null) || this.addonClasses.isEmpty())
 				throw new IllegalStateException("load was called for addon "+this.name+" but no addon classes were found.");
-			for(Class<? extends Addon> addonClass:this.addonClasses){
-				AddonData data = addonClass.getAnnotation(AddonData.class);
+			for(final Class<? extends Addon> addonClass:this.addonClasses){
+				final AddonData data = addonClass.getAnnotation(AddonData.class);
 				desc = new AddonDescriptionFile(data);
 				a = addonClass.getConstructor(AddonManagerPlugin.class, AddonDescriptionFile.class).newInstance(plugin, desc);
 

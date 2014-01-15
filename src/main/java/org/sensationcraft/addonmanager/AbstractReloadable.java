@@ -17,9 +17,9 @@ public abstract class AbstractReloadable
 	protected Addon addon;
 
 	protected volatile boolean isEnabled = false;
-	
+
 	protected DependencyManager dependencyManager;
-	
+
 	protected Set<Class<? extends Addon>> addonClasses = new HashSet<Class<? extends Addon>>();
 
 	public Addon getAddon()
@@ -31,9 +31,9 @@ public abstract class AbstractReloadable
 	public Addon load(final AddonManagerPlugin plugin, final boolean reload) throws UnknownAddonException, InvalidAddonException{
 		return this.load(plugin, reload, false);
 	}
-	
+
 	public abstract DependencyStatus preLoad(final AddonManagerPlugin plugin) throws UnknownAddonException;
-	
+
 	public abstract void load(final Addon addon);
 
 	public abstract void unload();
@@ -75,6 +75,6 @@ public abstract class AbstractReloadable
 	public abstract void disable();
 
 	public DependencyManager getDependencyManager() {
-		return dependencyManager;
+		return this.dependencyManager;
 	}
 }

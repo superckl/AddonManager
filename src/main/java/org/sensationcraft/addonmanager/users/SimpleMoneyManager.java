@@ -18,24 +18,24 @@ public class SimpleMoneyManager extends MoneyManager{
 	}
 
 	@Override
-	public double setMoney(double money) {
-		MoneyChangeEvent e = new MoneyChangeEvent(this.user, money, this.money);
+	public double setMoney(final double money) {
+		final MoneyChangeEvent e = new MoneyChangeEvent(this.user, money, this.money);
 		Bukkit.getPluginManager().callEvent(e);
 		this.money = e.getTo();
 		return this.money;
 	}
 
 	@Override
-	public double subtract(double money) {
-		MoneyChangeEvent e = new MoneyChangeEvent(this.user, this.money-money, this.money);
+	public double subtract(final double money) {
+		final MoneyChangeEvent e = new MoneyChangeEvent(this.user, this.money-money, this.money);
 		Bukkit.getPluginManager().callEvent(e);
 		this.money = e.getTo();
 		return this.money;
 	}
 
 	@Override
-	public double add(double money) {
-		MoneyChangeEvent e = new MoneyChangeEvent(this.user, this.money+money, this.money);
+	public double add(final double money) {
+		final MoneyChangeEvent e = new MoneyChangeEvent(this.user, this.money+money, this.money);
 		Bukkit.getPluginManager().callEvent(e);
 		this.money = e.getTo();
 		return this.money;
