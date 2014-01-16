@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
 import org.bukkit.event.EventHandler;
@@ -16,8 +17,10 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.sensationcraft.addonmanager.addon.dependencies.DependencyStatus;
 import org.sensationcraft.addonmanager.commands.AddonCommand;
 import org.sensationcraft.addonmanager.exceptions.InvalidAddonException;
+import org.sensationcraft.addonmanager.exceptions.UnknownAddonException;
 import org.sensationcraft.addonmanager.listeners.EnableDisableListener;
 import org.sensationcraft.addonmanager.storage.Storage;
 import org.sensationcraft.addonmanager.users.AddonUser;
@@ -35,9 +38,12 @@ public class AddonManagerPlugin extends JavaPlugin implements Listener{
 	private final Map<String, AddonUser> users = new HashMap<String, AddonUser>();
 
 	private final String aliasMatcher = "[%s:]*[%s]";
+	
+	private boolean inStartup;
 
 	@Override
 	public void onEnable(){
+		this.inStartup = true;
 		AddonManagerPlugin.instance = this;
 		this.saveDefaultConfig();
 		this.getLogger().info("Loading addons...");
@@ -47,14 +53,27 @@ public class AddonManagerPlugin extends JavaPlugin implements Listener{
 
 			@Override
 			public void run() {
-				// TODO Check enabled plugins, Bukkit must be done enabling, manage depending addons accordingly
-
+				for(ReloadableAddon addon:AddonManagerPlugin.this.manager.getDependingAddons())
+					if(addon.getDependencyManager().getCurrentStatus() == DependencyStatus.HARD_RESOLVED)
+						try {
+							addon.load(AddonManagerPlugin.this, false);
+						} catch (UnknownAddonException e) {
+							e.printStackTrace();
+						} catch (InvalidAddonException e) {
+							e.printStackTrace();
+						}
+				for(ReloadableAddon addon:AddonManagerPlugin.this.manager.getDependingAddons()){
+					AddonManagerPlugin.this.getLogger().severe(new StringBuilder("Failed to enable Addon ").append(addon.getFileName())
+					.append(". All dependencies were not sastisfied. Dependencies not sastisfied: ")
+					.append(StringUtils.join(addon.getDependencyManager().getRemainingHardDepends(), ", ")).toString());
+				}
 			}
 
 		}.runTask(this);
 		this.getLogger().info("Registering listeners...");
 		this.getServer().getPluginManager().registerEvents(this, this); //User events
-		this.getServer().getPluginManager().registerEvents(new EnableDisableListener(), this); //Do it after loading addons to avoid addon events...
+		this.getServer().getPluginManager().registerEvents(new EnableDisableListener(this), this); //Do it after loading addons to avoid addon events...
+		this.inStartup = false;
 	}
 
 	@Override
@@ -254,9 +273,17 @@ public class AddonManagerPlugin extends JavaPlugin implements Listener{
 				return (ReloadableAddon) reloadable;
 		return null;
 	}
+	
+	public AddonManager getAddonManager(){
+		return this.manager;
+	}
 
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerJoin(final PlayerJoinEvent e){
 		this.users.put(e.getPlayer().getName(), new AddonUser(e.getPlayer()));
+	}
+
+	public boolean isInStartup() {
+		return inStartup;
 	}
 }

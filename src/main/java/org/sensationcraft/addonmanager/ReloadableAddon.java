@@ -93,7 +93,6 @@ public class ReloadableAddon extends AbstractReloadable
 			// Swallow it
 		}
 		final ClassLoader cloader = new java.net.URLClassLoader(urls, AddonManager.parentLoader);
-		final Set<Class<? extends Addon>> addonClasses = new HashSet<Class<? extends Addon>>();
 		try {
 			for(final String clazz : classList)
 			{
@@ -101,17 +100,19 @@ public class ReloadableAddon extends AbstractReloadable
 				final AddonData data = c.getAnnotation(AddonData.class);
 				if(data == null)
 					continue;
+				if(this.addon != null)
+					throw new InvalidAddonException("Addon "+this.name+" has more than one main class.");
 				if(data.name().isEmpty())
 					throw new InvalidAddonException("Addon name should be defined!");
 
-				//TODO Check for double addons
 				if(!Addon.class.isAssignableFrom(c))
 					throw new InvalidAddonException("Addon "+data.name()+" has an inalid Addon class.");
-				addonClasses.add(c.asSubclass(Addon.class));
+				this.addonClass = c.asSubclass(Addon.class);
 			}
-			this.addonClasses = addonClasses;
-			this.dependencyManager = DependencyManager.evaluate(plugin, this, addonClasses, this.name);
-			return this.dependencyManager.getDependencyStatus();
+			if(this.addonClass == null)
+				throw new InvalidAddonException("Addon "+this.name+" has no main class.");
+			this.dependencyManager = DependencyManager.evaluate(plugin, this, this.addonClass, this.name);
+			return this.dependencyManager.getDependencyStatus(false);
 		} catch (final ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (final InvalidAddonException e) {
@@ -178,20 +179,20 @@ public class ReloadableAddon extends AbstractReloadable
 		AddonDescriptionFile desc = null;
 		try
 		{
-			if(this.dependencyManager.getDependencyStatus() == DependencyStatus.NONE)
-				throw new IllegalStateException("Load was called for addon "+this.name+" but dependencies are not sastified.");
-			if((this.addonClasses == null) || this.addonClasses.isEmpty())
+			if(this.dependencyManager.getDependencyStatus(false) == DependencyStatus.NONE)
+				throw new IllegalStateException("Load was called for addon "+this.name+" but hard dependencies are not sastified.");
+			if(this.addonClass == null)
 				throw new IllegalStateException("load was called for addon "+this.name+" but no addon classes were found.");
-			for(final Class<? extends Addon> addonClass:this.addonClasses){
-				final AddonData data = addonClass.getAnnotation(AddonData.class);
+			AddonManagerPlugin.getInstance().getAddonManager().getDependingAddons().remove(this);
+				final AddonData data = this.addonClass.getAnnotation(AddonData.class);
 				desc = new AddonDescriptionFile(data);
-				a = addonClass.getConstructor(AddonManagerPlugin.class, AddonDescriptionFile.class).newInstance(plugin, desc);
+				a = this.addonClass.getConstructor(AddonManagerPlugin.class, AddonDescriptionFile.class).newInstance(plugin, desc);
 
 				//Look for StorageRestore and restore where possible
 				final Set<Class<?>> classes = new HashSet<Class<?>>();
-				classes.add(addonClass);
-				if(addonClass.isAnnotationPresent(ExtendPersistance.class))
-					classes.addAll(Arrays.asList(addonClass.getAnnotation(ExtendPersistance.class).classes()));
+				classes.add(this.addonClass);
+				if(this.addonClass.isAnnotationPresent(ExtendPersistance.class))
+					classes.addAll(Arrays.asList(this.addonClass.getAnnotation(ExtendPersistance.class).classes()));
 				for(final Class<?> check:classes)
 					for(final Field field:check.getDeclaredFields())
 					{
@@ -212,8 +213,7 @@ public class ReloadableAddon extends AbstractReloadable
 					}
 				if(!reload)
 					this.addon = a;
-				//break; NOTE: We can load more than one? Maybe?
-			}
+				//break; NOTE: Only one should load?
 		}
 		catch(final InvocationTargetException ex)
 		{
@@ -334,5 +334,9 @@ public class ReloadableAddon extends AbstractReloadable
 		synchronized(this.tasks) {
 			this.tasks.remove(task);
 		}
+	}
+
+	protected String getFileName() {
+		return name;
 	}
 }

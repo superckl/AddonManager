@@ -5,11 +5,13 @@ import java.io.FileFilter;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -19,6 +21,7 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.conversations.Conversable;
 import org.bukkit.conversations.ConversationFactory;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.sensationcraft.addonmanager.addon.dependencies.DependencyStatus;
 import org.sensationcraft.addonmanager.exceptions.InvalidAddonException;
 import org.sensationcraft.addonmanager.exceptions.UnknownAddonException;
 
@@ -30,6 +33,8 @@ public class AddonManager implements CommandExecutor
 	private final static Logger log;
 
 	private final Map<String, AbstractReloadable> addons = new HashMap<String, AbstractReloadable>();
+	
+	private final Set<ReloadableAddon> dependingAddons = new HashSet<ReloadableAddon>();
 
 	protected static ClassLoader parentLoader;
 
@@ -102,12 +107,19 @@ public class AddonManager implements CommandExecutor
 				final ReloadableAddon rl = new ReloadableAddon(args[1]);
 				try
 				{
-					rl.load(this.plugin, false);
+					rl.preLoad(this.plugin);
+					if(rl.getDependencyManager().getCurrentStatus() == DependencyStatus.HARD_RESOLVED || rl.getDependencyManager().getCurrentStatus() == DependencyStatus.BOTH_RESOLVED){
+						rl.load(this.plugin, false);
+						this.addons.put(rl.getAddon().getName(), rl);
+						sender.sendMessage(ChatColor.GREEN+"Loaded the addon.");
+					}else{
+						this.dependingAddons.add(rl);
+						sender.sendMessage(ChatColor.RED+ new StringBuilder("Failed to enable Addon ").append(args[1])
+								.append(". All dependencies were not sastisfied. Addon Manager will load the addon once all depedencies have been sasisfied. " +
+										"Dependencies not sastisfied: ").append(StringUtils.join(rl.getDependencyManager().getRemainingHardDepends(), ", "))
+										.toString());
+					}
 					// Maybe call an onEnable or smth
-
-					this.addons.put(rl.getAddon().getName(), rl);
-
-					sender.sendMessage(ChatColor.GREEN+"Loaded the addon.");
 				}
 				catch(final UnknownAddonException ex)
 				{
@@ -228,6 +240,29 @@ public class AddonManager implements CommandExecutor
 				final AbstractReloadable ar = this.addons.get(args[1]);
 				((Conversable)sender).beginConversation(this.factory.withFirstPrompt(new HardReloadConvo(this.plugin, ar, sender)).buildConversation((Conversable) sender));
 			}
+		}else if(args[0].equalsIgnoreCase("canceldependload")){
+			if(this.usePermissions && !sender.hasPermission("addonmanager.canceldependload")){
+				sender.sendMessage(ChatColor.RED+"You don't have permission to use that command!");
+				return true;
+			}
+			if(args.length < 2)
+				sender.sendMessage(ChatColor.RED+"Please specify the addon you want to reload");
+			else{
+				boolean found = false;
+				Iterator<ReloadableAddon> it = this.dependingAddons.iterator();
+				while(it.hasNext())
+					if(it.next().getFileName().equalsIgnoreCase(args[1])){
+						it.remove();
+						sender.sendMessage(ChatColor.GREEN+"Loading canceled.");
+						found = true;
+						break;
+					}
+				if(!found){
+					sender.sendMessage(ChatColor.RED+"Addon not found.");
+					return true;
+				}
+				
+			}
 		}
 		return true;
 	}
@@ -253,14 +288,18 @@ public class AddonManager implements CommandExecutor
 			final ReloadableAddon rl = new ReloadableAddon(name);
 			try
 			{
-				rl.load(this.plugin, false);
+				rl.preLoad(this.plugin);
+				if(rl.getDependencyManager().getCurrentStatus() == DependencyStatus.BOTH_RESOLVED){
+					rl.load(this.plugin, false);
+					this.addons.put(rl.getAddon().getName(), rl);
+
+					rl.enable(this.plugin);
+
+					AddonManager.log.log(Level.INFO, ChatColor.GREEN+"Loaded addon {0}.", name);
+				}else
+					this.dependingAddons.add(rl);
+					
 				// Maybe call an onEnable or smth
-
-				this.addons.put(rl.getAddon().getName(), rl);
-
-				rl.enable(this.plugin);
-
-				AddonManager.log.log(Level.INFO, ChatColor.GREEN+"Loaded addon {0}.", name);
 			}
 			catch(final UnknownAddonException ex)
 			{
@@ -282,6 +321,10 @@ public class AddonManager implements CommandExecutor
 
 	public Map<String, AbstractReloadable> getAddons(){
 		return this.addons;
+	}
+
+	public Set<ReloadableAddon> getDependingAddons() {
+		return dependingAddons;
 	}
 
 }

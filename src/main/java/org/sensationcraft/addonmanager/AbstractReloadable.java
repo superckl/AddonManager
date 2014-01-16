@@ -1,8 +1,5 @@
 package org.sensationcraft.addonmanager;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
@@ -20,7 +17,7 @@ public abstract class AbstractReloadable
 
 	protected DependencyManager dependencyManager;
 
-	protected Set<Class<? extends Addon>> addonClasses = new HashSet<Class<? extends Addon>>();
+	protected Class<? extends Addon> addonClass;
 
 	public Addon getAddon()
 	{
