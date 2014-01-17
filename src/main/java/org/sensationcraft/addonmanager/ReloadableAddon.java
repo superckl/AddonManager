@@ -49,7 +49,6 @@ public class ReloadableAddon extends AbstractReloadable
 		final File file = new File(plugin.getDataFolder(), String.format("addons/%s.jar", this.name));
 		if(!file.exists())
 			throw new UnknownAddonException(this.name);
-
 		JarFile jf = null;
 		final List<String> classList = new ArrayList<String>();
 		try
@@ -73,7 +72,7 @@ public class ReloadableAddon extends AbstractReloadable
 		finally
 		{
 			if(jf != null)
-				try
+            try
 			{
 					jf.close();
 			}catch(final IOException ex){}
@@ -93,7 +92,7 @@ public class ReloadableAddon extends AbstractReloadable
 		try {
 			for(final String clazz : classList)
 			{
-				final Class<?> c = Class.forName(clazz, true, cloader);
+				final Class<?> c = cloader.loadClass(clazz);
 				final AddonData data = c.getAnnotation(AddonData.class);
 				if(data == null)
 					continue;

@@ -1,16 +1,21 @@
 package org.sensationcraft.addonmanager;
 
+import java.util.logging.Logger;
+
 public abstract class Addon
 {
 
 	private final AddonManagerPlugin scg;
 
 	private final AddonDescriptionFile desc;
+    
+    private final Logger logger;
 
 	public Addon(final AddonManagerPlugin scg, final AddonDescriptionFile desc)
 	{
 		this.scg = scg;
 		this.desc = desc;
+        this.logger = Logger.getLogger("AddonManager:"+desc.getName());
 	}
 
 	public void onEnable()
@@ -47,4 +52,9 @@ public abstract class Addon
 	{
 		return this.getPlugin().getStorage().get(clazz, key);
 	}
+    
+    public Logger getLogger()
+    {
+        return this.logger;
+    }
 }
