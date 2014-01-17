@@ -19,7 +19,6 @@ import java.util.jar.JarFile;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.sensationcraft.addonmanager.addon.dependencies.DependencyManager;
 import org.sensationcraft.addonmanager.addon.dependencies.DependencyStatus;
@@ -30,8 +29,6 @@ import org.sensationcraft.addonmanager.exceptions.InvalidAddonException;
 import org.sensationcraft.addonmanager.exceptions.UnknownAddonException;
 import org.sensationcraft.addonmanager.storage.ExtendPersistance;
 import org.sensationcraft.addonmanager.storage.Persistant;
-
-
 
 public class ReloadableAddon extends AbstractReloadable
 {
@@ -183,7 +180,7 @@ public class ReloadableAddon extends AbstractReloadable
 				throw new IllegalStateException("Load was called for addon "+this.name+" but hard dependencies are not sastified.");
 			if(this.addonClass == null)
 				throw new IllegalStateException("load was called for addon "+this.name+" but no addon classes were found.");
-			AddonManagerPlugin.getInstance().getAddonManager().getDependingAddons().remove(this);
+			plugin.getAddonManager().getDependingAddons().remove(this);
 				final AddonData data = this.addonClass.getAnnotation(AddonData.class);
 				desc = new AddonDescriptionFile(data);
 				a = this.addonClass.getConstructor(AddonManagerPlugin.class, AddonDescriptionFile.class).newInstance(plugin, desc);
@@ -213,6 +210,7 @@ public class ReloadableAddon extends AbstractReloadable
 					}
 				if(!reload)
 					this.addon = a;
+				plugin.getAddonManager().getAddons().put(this.addon.getName(), this);
 				//break; NOTE: Only one should load?
 		}
 		catch(final InvocationTargetException ex)
@@ -251,10 +249,11 @@ public class ReloadableAddon extends AbstractReloadable
 	}
 
 	@Override
-	public void enable(final Plugin plugin) throws IllegalStateException
+	public void enable(final AddonManagerPlugin plugin) throws IllegalStateException
 	{
 		if(this.addon == null)
 			throw new IllegalStateException("Addon not loaded");
+		plugin.getLogger().info("Enabling Addon "+this.addon.getName());
 		try{
 			this.addon.onEnable();
 			this.isEnabled = true;

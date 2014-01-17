@@ -46,8 +46,12 @@ public class AddonManagerPlugin extends JavaPlugin implements Listener{
 		this.inStartup = true;
 		AddonManagerPlugin.instance = this;
 		this.saveDefaultConfig();
+		this.getLogger().info("Registering listeners...");
+		this.getServer().getPluginManager().registerEvents(this, this); //User events
+		this.getServer().getPluginManager().registerEvents(new EnableDisableListener(this), this);
 		this.getLogger().info("Loading addons...");
 		this.manager = new AddonManager(this, this.getConfig().getBoolean("Use Permissions"));
+		this.manager.loadAll();
 		this.getServer().getPluginCommand("addons").setExecutor(this.manager);
 		new BukkitRunnable(){
 
@@ -70,9 +74,6 @@ public class AddonManagerPlugin extends JavaPlugin implements Listener{
 			}
 
 		}.runTask(this);
-		this.getLogger().info("Registering listeners...");
-		this.getServer().getPluginManager().registerEvents(this, this); //User events
-		this.getServer().getPluginManager().registerEvents(new EnableDisableListener(this), this); //Do it after loading addons to avoid addon events...
 		this.inStartup = false;
 	}
 

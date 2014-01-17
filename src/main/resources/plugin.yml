@@ -1,7 +1,7 @@
 name: AddonManager
 authors: [superckl, DarkSeraphim]
 version: 1.0
-main: common.good.addonmanager.AddonManagerPlugin
+main: org.sensationcraft.addonmanager.AddonManagerPlugin
 commands:
   addons:
     description: Command for the Addon Manager.

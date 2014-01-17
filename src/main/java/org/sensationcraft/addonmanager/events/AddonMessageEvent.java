@@ -8,6 +8,7 @@ public class AddonMessageEvent<K> extends Event{
 
 	private final AbstractReloadable addon;
 	private K message; //Let them choose! :P
+	private final static HandlerList handlers = new HandlerList();
 
 	public AddonMessageEvent(final AbstractReloadable addon, final K message){
 		this.addon = addon;
@@ -28,7 +29,11 @@ public class AddonMessageEvent<K> extends Event{
 
 	@Override
 	public HandlerList getHandlers() {
-		return new HandlerList();
+		return AddonMessageEvent.handlers;
+	}
+	
+	public static HandlerList getHandlerList(){
+		return handlers;
 	}
 
 }

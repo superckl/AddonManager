@@ -50,11 +50,15 @@ public class DependencyManager {
 				this.hardPlugins.put(plugin.getName(), true);
 				//New dependency detected, reassess status
 				DependencyStatus status = this.currrentStatus;
-				if(this.getDependencyStatus(true) == DependencyStatus.HARD_RESOLVED && status == DependencyStatus.NONE && !AddonManagerPlugin.getInstance().isInStartup())
+				if(this.getDependencyStatus(false) == DependencyStatus.HARD_RESOLVED && status == DependencyStatus.NONE && !AddonManagerPlugin.getInstance().isInStartup()){
 					this.addon.load(AddonManagerPlugin.getInstance(), false);
-				else if(this.currrentStatus == DependencyStatus.BOTH_RESOLVED && status == DependencyStatus.NONE)
+					this.addon.enable(AddonManagerPlugin.getInstance());
+				}
+				else if(this.currrentStatus == DependencyStatus.BOTH_RESOLVED && status == DependencyStatus.NONE){
 					//The addon must have been unloaded with another one it depends on
 					this.addon.load(AddonManagerPlugin.getInstance(), false);
+					this.addon.enable(AddonManagerPlugin.getInstance());
+				}
 				return;
 			}
 			sastisfied = this.softPlugins.get(plugin.getName());
@@ -64,8 +68,10 @@ public class DependencyManager {
 				}
 				this.softPlugins.put(plugin.getName(), true);
 				DependencyStatus status = this.currrentStatus;
-				if(this.getDependencyStatus(false) == DependencyStatus.BOTH_RESOLVED && status == DependencyStatus.HARD_RESOLVED && AddonManagerPlugin.getInstance().isInStartup())
+				if(this.getDependencyStatus(false) == DependencyStatus.BOTH_RESOLVED && status == DependencyStatus.HARD_RESOLVED && AddonManagerPlugin.getInstance().isInStartup()){
 					this.addon.load(AddonManagerPlugin.getInstance(), false);
+					this.addon.enable(AddonManagerPlugin.getInstance());
+				}
 			}
 		} catch (UnknownAddonException e) {
 			e.printStackTrace();
@@ -84,11 +90,15 @@ public class DependencyManager {
 				this.hardAddons.put(addon.getName(), true);
 				//New dependency detected, reassess status
 				DependencyStatus status = this.currrentStatus;
-				if(this.getDependencyStatus(true) == DependencyStatus.HARD_RESOLVED && status == DependencyStatus.NONE && !AddonManagerPlugin.getInstance().isInStartup())
+				if(this.getDependencyStatus(false) == DependencyStatus.HARD_RESOLVED && status == DependencyStatus.NONE && !AddonManagerPlugin.getInstance().isInStartup()){
 					this.addon.load(AddonManagerPlugin.getInstance(), false);
-				else if(this.currrentStatus == DependencyStatus.BOTH_RESOLVED && status == DependencyStatus.NONE)
+					this.addon.enable(AddonManagerPlugin.getInstance());
+				}
+				else if(this.currrentStatus == DependencyStatus.BOTH_RESOLVED && status == DependencyStatus.NONE){
 					//The addon must have been unloaded with another one it depends on
 					this.addon.load(AddonManagerPlugin.getInstance(), false);
+					this.addon.enable(AddonManagerPlugin.getInstance());
+				}
 				return;
 			}
 			sastisfied = this.softAddons.get(addon.getName());
@@ -98,8 +108,10 @@ public class DependencyManager {
 				}
 				this.softAddons.put(addon.getName(), true);
 				DependencyStatus status = this.currrentStatus;
-				if(this.getDependencyStatus(false) == DependencyStatus.BOTH_RESOLVED && status == DependencyStatus.HARD_RESOLVED && AddonManagerPlugin.getInstance().isInStartup())
+				if(this.getDependencyStatus(false) == DependencyStatus.BOTH_RESOLVED && status == DependencyStatus.HARD_RESOLVED && AddonManagerPlugin.getInstance().isInStartup()){
 					this.addon.load(AddonManagerPlugin.getInstance(), false);
+					this.addon.enable(AddonManagerPlugin.getInstance());
+				}
 			}
 		} catch (UnknownAddonException e) {
 			e.printStackTrace();
@@ -233,7 +245,7 @@ public class DependencyManager {
 		} catch (final IllegalAccessException e) {
 			e.printStackTrace();
 		}
-		return null; //TODO
+		return null;
 	}
 
 }

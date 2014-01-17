@@ -9,6 +9,7 @@ public class MoneyChangeEvent extends Event{
 	private double to;
 	private final double from;
 	private final AddonUser user;
+	private final static HandlerList handlers = new HandlerList();
 
 	public MoneyChangeEvent(final AddonUser user, final double to, final double from){
 		this.user = user;
@@ -18,7 +19,11 @@ public class MoneyChangeEvent extends Event{
 
 	@Override
 	public HandlerList getHandlers() {
-		return new HandlerList();
+		return MoneyChangeEvent.handlers;
+	}
+	
+	public static HandlerList getHandlerList(){
+		return handlers;
 	}
 
 	public double getTo() {

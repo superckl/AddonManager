@@ -45,6 +45,8 @@ public class AddonManager implements CommandExecutor
 
 	private final boolean usePermissions;
 	private final ConversationFactory factory;
+	
+	private final Set<String> excludes;
 
 	public AddonManager(final AddonManagerPlugin plugin, final boolean usePermissions)
 	{
@@ -75,9 +77,7 @@ public class AddonManager implements CommandExecutor
 		}
 		AddonManager.parentLoader = cl;
 
-		final Set<String> ex = new HashSet<String>(this.plugin.getConfig().getStringList("excludes"));
-
-		this.loadAll(ex);
+		this.excludes = new HashSet<String>(this.plugin.getConfig().getStringList("excludes"));
 	}
 
 	@Override
@@ -110,7 +110,6 @@ public class AddonManager implements CommandExecutor
 					rl.preLoad(this.plugin);
 					if(rl.getDependencyManager().getCurrentStatus() == DependencyStatus.HARD_RESOLVED || rl.getDependencyManager().getCurrentStatus() == DependencyStatus.BOTH_RESOLVED){
 						rl.load(this.plugin, false);
-						this.addons.put(rl.getAddon().getName(), rl);
 						sender.sendMessage(ChatColor.GREEN+"Loaded the addon.");
 					}else{
 						this.dependingAddons.add(rl);
@@ -267,11 +266,11 @@ public class AddonManager implements CommandExecutor
 		return true;
 	}
 
-	public final void loadAll(final Set<String> excludes)
+	public final void loadAll()
 	{
 		//TODO change to load and preload
 		final File lisDir = new File(this.plugin.getDataFolder(), "addons");
-		final File[] files = lisDir.listFiles(new FileFilter()
+		File[] files = lisDir.listFiles(new FileFilter()
 		{
 			@Override
 			public boolean accept(final File file)
@@ -291,8 +290,6 @@ public class AddonManager implements CommandExecutor
 				rl.preLoad(this.plugin);
 				if(rl.getDependencyManager().getCurrentStatus() == DependencyStatus.BOTH_RESOLVED){
 					rl.load(this.plugin, false);
-					this.addons.put(rl.getAddon().getName(), rl);
-
 					rl.enable(this.plugin);
 
 					AddonManager.log.log(Level.INFO, ChatColor.GREEN+"Loaded addon {0}.", name);
@@ -311,6 +308,7 @@ public class AddonManager implements CommandExecutor
 				ex.printStackTrace();
 			}
 		}
+		files = null;
 	}
 
 	public void destroy()
@@ -324,7 +322,7 @@ public class AddonManager implements CommandExecutor
 	}
 
 	public Set<ReloadableAddon> getDependingAddons() {
-		return dependingAddons;
+		return this.dependingAddons;
 	}
 
 }

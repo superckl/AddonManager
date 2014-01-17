@@ -7,6 +7,7 @@ import org.sensationcraft.addonmanager.Addon;
 public class AddonEnableEvent extends Event{
 
 	private final Addon addon;
+	private final static HandlerList handlers = new HandlerList();
 
 	public AddonEnableEvent(final Addon addon){
 		this.addon = addon;
@@ -18,7 +19,11 @@ public class AddonEnableEvent extends Event{
 
 	@Override
 	public HandlerList getHandlers() {
-		return new HandlerList();
+		return AddonEnableEvent.handlers;
+	}
+	
+	public static HandlerList getHandlerList(){
+		return handlers;
 	}
 
 }
