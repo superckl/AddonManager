@@ -6,6 +6,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -88,7 +89,7 @@ public class ReloadableAddon extends AbstractReloadable
 			return DependencyStatus.NONE;
 			// Swallow it
 		}
-		final ClassLoader cloader = new java.net.URLClassLoader(urls, AddonManager.parentLoader);
+		final URLClassLoader cloader = new URLClassLoader(urls, AddonManager.parentLoader);
 		try {
 			for(final String clazz : classList)
 			{
@@ -113,6 +114,12 @@ public class ReloadableAddon extends AbstractReloadable
 			e.printStackTrace();
 		} catch (final InvalidAddonException e) {
 			e.printStackTrace();
+		}finally{
+			try {
+				cloader.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		return DependencyStatus.NONE;
 	}
