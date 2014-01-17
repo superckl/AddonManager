@@ -21,9 +21,9 @@ public class MoneyChangeEvent extends Event{
 	public HandlerList getHandlers() {
 		return MoneyChangeEvent.handlers;
 	}
-	
+
 	public static HandlerList getHandlerList(){
-		return handlers;
+		return MoneyChangeEvent.handlers;
 	}
 
 	public double getTo() {

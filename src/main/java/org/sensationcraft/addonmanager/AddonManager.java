@@ -33,7 +33,7 @@ public class AddonManager implements CommandExecutor
 	private final static Logger log;
 
 	private final Map<String, AbstractReloadable> addons = new HashMap<String, AbstractReloadable>();
-	
+
 	private final Set<ReloadableAddon> dependingAddons = new HashSet<ReloadableAddon>();
 
 	protected static ClassLoader parentLoader;
@@ -45,7 +45,7 @@ public class AddonManager implements CommandExecutor
 
 	private final boolean usePermissions;
 	private final ConversationFactory factory;
-	
+
 	private final Set<String> excludes;
 
 	public AddonManager(final AddonManagerPlugin plugin, final boolean usePermissions)
@@ -108,7 +108,7 @@ public class AddonManager implements CommandExecutor
 				try
 				{
 					rl.preLoad(this.plugin);
-					if(rl.getDependencyManager().getCurrentStatus() == DependencyStatus.HARD_RESOLVED || rl.getDependencyManager().getCurrentStatus() == DependencyStatus.BOTH_RESOLVED){
+					if((rl.getDependencyManager().getCurrentStatus() == DependencyStatus.HARD_RESOLVED) || (rl.getDependencyManager().getCurrentStatus() == DependencyStatus.BOTH_RESOLVED)){
 						rl.load(this.plugin, false);
 						sender.sendMessage(ChatColor.GREEN+"Loaded the addon.");
 					}else{
@@ -248,7 +248,7 @@ public class AddonManager implements CommandExecutor
 				sender.sendMessage(ChatColor.RED+"Please specify the addon you want to reload");
 			else{
 				boolean found = false;
-				Iterator<ReloadableAddon> it = this.dependingAddons.iterator();
+				final Iterator<ReloadableAddon> it = this.dependingAddons.iterator();
 				while(it.hasNext())
 					if(it.next().getFileName().equalsIgnoreCase(args[1])){
 						it.remove();
@@ -260,7 +260,7 @@ public class AddonManager implements CommandExecutor
 					sender.sendMessage(ChatColor.RED+"Addon not found.");
 					return true;
 				}
-				
+
 			}
 		}
 		return true;
@@ -282,7 +282,7 @@ public class AddonManager implements CommandExecutor
 		{
 			String name = file.getName();
 			name = name.substring(0, name.length() - 4);
-			if(excludes.contains(name))
+			if(this.excludes.contains(name))
 				continue;
 			final ReloadableAddon rl = new ReloadableAddon(name);
 			try
@@ -295,7 +295,7 @@ public class AddonManager implements CommandExecutor
 					AddonManager.log.log(Level.INFO, ChatColor.GREEN+"Loaded addon {0}.", name);
 				}else
 					this.dependingAddons.add(rl);
-					
+
 				// Maybe call an onEnable or smth
 			}
 			catch(final UnknownAddonException ex)

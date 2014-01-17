@@ -21,9 +21,9 @@ public class AddonEnableEvent extends Event{
 	public HandlerList getHandlers() {
 		return AddonEnableEvent.handlers;
 	}
-	
+
 	public static HandlerList getHandlerList(){
-		return handlers;
+		return AddonEnableEvent.handlers;
 	}
 
 }

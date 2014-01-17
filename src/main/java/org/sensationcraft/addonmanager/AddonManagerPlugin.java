@@ -38,7 +38,7 @@ public class AddonManagerPlugin extends JavaPlugin implements Listener{
 	private final Map<String, AddonUser> users = new HashMap<String, AddonUser>();
 
 	private final String aliasMatcher = "[%s:]*[%s]";
-	
+
 	private boolean inStartup;
 
 	@Override
@@ -57,20 +57,19 @@ public class AddonManagerPlugin extends JavaPlugin implements Listener{
 
 			@Override
 			public void run() {
-				for(ReloadableAddon addon:AddonManagerPlugin.this.manager.getDependingAddons())
+				for(final ReloadableAddon addon:AddonManagerPlugin.this.manager.getDependingAddons())
 					if(addon.getDependencyManager().getCurrentStatus() == DependencyStatus.HARD_RESOLVED)
 						try {
 							addon.load(AddonManagerPlugin.this, false);
-						} catch (UnknownAddonException e) {
+						} catch (final UnknownAddonException e) {
 							e.printStackTrace();
-						} catch (InvalidAddonException e) {
+						} catch (final InvalidAddonException e) {
 							e.printStackTrace();
 						}
-				for(ReloadableAddon addon:AddonManagerPlugin.this.manager.getDependingAddons()){
+				for(final ReloadableAddon addon:AddonManagerPlugin.this.manager.getDependingAddons())
 					AddonManagerPlugin.this.getLogger().severe(new StringBuilder("Failed to enable Addon ").append(addon.getFileName())
-					.append(". All dependencies were not sastisfied. Dependencies not sastisfied: ")
-					.append(StringUtils.join(addon.getDependencyManager().getRemainingHardDepends(), ", ")).toString());
-				}
+							.append(". All dependencies were not sastisfied. Dependencies not sastisfied: ")
+							.append(StringUtils.join(addon.getDependencyManager().getRemainingHardDepends(), ", ")).toString());
 			}
 
 		}.runTask(this);
@@ -274,7 +273,7 @@ public class AddonManagerPlugin extends JavaPlugin implements Listener{
 				return (ReloadableAddon) reloadable;
 		return null;
 	}
-	
+
 	public AddonManager getAddonManager(){
 		return this.manager;
 	}
@@ -285,6 +284,6 @@ public class AddonManagerPlugin extends JavaPlugin implements Listener{
 	}
 
 	public boolean isInStartup() {
-		return inStartup;
+		return this.inStartup;
 	}
 }

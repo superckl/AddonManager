@@ -31,9 +31,9 @@ public class AddonMessageEvent<K> extends Event{
 	public HandlerList getHandlers() {
 		return AddonMessageEvent.handlers;
 	}
-	
+
 	public static HandlerList getHandlerList(){
-		return handlers;
+		return AddonMessageEvent.handlers;
 	}
 
 }

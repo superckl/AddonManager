@@ -2,7 +2,6 @@ package org.sensationcraft.addonmanager;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.Plugin;
 import org.sensationcraft.addonmanager.addon.dependencies.DependencyManager;
 import org.sensationcraft.addonmanager.addon.dependencies.DependencyStatus;
 import org.sensationcraft.addonmanager.exceptions.InvalidAddonException;

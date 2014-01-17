@@ -181,37 +181,37 @@ public class ReloadableAddon extends AbstractReloadable
 			if(this.addonClass == null)
 				throw new IllegalStateException("load was called for addon "+this.name+" but no addon classes were found.");
 			plugin.getAddonManager().getDependingAddons().remove(this);
-				final AddonData data = this.addonClass.getAnnotation(AddonData.class);
-				desc = new AddonDescriptionFile(data);
-				a = this.addonClass.getConstructor(AddonManagerPlugin.class, AddonDescriptionFile.class).newInstance(plugin, desc);
+			final AddonData data = this.addonClass.getAnnotation(AddonData.class);
+			desc = new AddonDescriptionFile(data);
+			a = this.addonClass.getConstructor(AddonManagerPlugin.class, AddonDescriptionFile.class).newInstance(plugin, desc);
 
-				//Look for StorageRestore and restore where possible
-				final Set<Class<?>> classes = new HashSet<Class<?>>();
-				classes.add(this.addonClass);
-				if(this.addonClass.isAnnotationPresent(ExtendPersistance.class))
-					classes.addAll(Arrays.asList(this.addonClass.getAnnotation(ExtendPersistance.class).classes()));
-				for(final Class<?> check:classes)
-					for(final Field field:check.getDeclaredFields())
+			//Look for StorageRestore and restore where possible
+			final Set<Class<?>> classes = new HashSet<Class<?>>();
+			classes.add(this.addonClass);
+			if(this.addonClass.isAnnotationPresent(ExtendPersistance.class))
+				classes.addAll(Arrays.asList(this.addonClass.getAnnotation(ExtendPersistance.class).classes()));
+			for(final Class<?> check:classes)
+				for(final Field field:check.getDeclaredFields())
+				{
+					final boolean initialFlag = field.isAccessible();
+					field.setAccessible(true);
+					if(field.isAnnotationPresent(Persistant.class))
 					{
-						final boolean initialFlag = field.isAccessible();
-						field.setAccessible(true);
-						if(field.isAnnotationPresent(Persistant.class))
+						final Persistant annot = field.getAnnotation(Persistant.class);
+						Object obj = a.getData(Object.class, annot.key());
+						if((obj == null) || (annot.reloadOnly() && !reload) || hardReload)
 						{
-							final Persistant annot = field.getAnnotation(Persistant.class);
-							Object obj = a.getData(Object.class, annot.key());
-							if((obj == null) || (annot.reloadOnly() && !reload) || hardReload)
-							{
-								obj = annot.instantiationType().newInstance();
-								a.setData(annot.key(), obj);
-							}
-							field.set(a, obj);
+							obj = annot.instantiationType().newInstance();
+							a.setData(annot.key(), obj);
 						}
-						field.setAccessible(initialFlag);
+						field.set(a, obj);
 					}
-				if(!reload)
-					this.addon = a;
-				plugin.getAddonManager().getAddons().put(this.addon.getName(), this);
-				//break; NOTE: Only one should load?
+					field.setAccessible(initialFlag);
+				}
+			if(!reload)
+				this.addon = a;
+			plugin.getAddonManager().getAddons().put(this.addon.getName(), this);
+			//break; NOTE: Only one should load?
 		}
 		catch(final InvocationTargetException ex)
 		{
@@ -336,6 +336,6 @@ public class ReloadableAddon extends AbstractReloadable
 	}
 
 	protected String getFileName() {
-		return name;
+		return this.name;
 	}
 }

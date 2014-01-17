@@ -15,26 +15,26 @@ import org.sensationcraft.addonmanager.exceptions.InvalidAddonException;
 import org.sensationcraft.addonmanager.exceptions.UnknownAddonException;
 
 public class DependencyManager {
-	
+
 	private final ReloadableAddon addon;
 
 	private final Map<String, Boolean> softAddons = new HashMap<String, Boolean>();
 	private final Map<String, Boolean> hardAddons = new HashMap<String, Boolean>();
 	private final Map<String, Boolean> softPlugins = new HashMap<String, Boolean>();
 	private final Map<String, Boolean> hardPlugins = new HashMap<String, Boolean>();
-	
+
 	private DependencyStatus currrentStatus;
 
 	private DependencyManager(final ReloadableAddon addon){
 		this.addon = addon;
 	}
-	
+
 	public Set<String> getRemainingHardDepends(){
-		Set<String> depends = new HashSet<String>();
-		for(Entry<String, Boolean> entry:this.hardAddons.entrySet())
+		final Set<String> depends = new HashSet<String>();
+		for(final Entry<String, Boolean> entry:this.hardAddons.entrySet())
 			if(entry.getValue().booleanValue() == false)
 				depends.add(entry.getKey());
-		for(Entry<String, Boolean> entry:this.hardPlugins.entrySet())
+		for(final Entry<String, Boolean> entry:this.hardPlugins.entrySet())
 			if(entry.getValue().booleanValue() == false)
 				depends.add(entry.getKey());
 		return depends;
@@ -49,12 +49,12 @@ public class DependencyManager {
 				}
 				this.hardPlugins.put(plugin.getName(), true);
 				//New dependency detected, reassess status
-				DependencyStatus status = this.currrentStatus;
-				if(this.getDependencyStatus(false) == DependencyStatus.HARD_RESOLVED && status == DependencyStatus.NONE && !AddonManagerPlugin.getInstance().isInStartup()){
+				final DependencyStatus status = this.currrentStatus;
+				if((this.getDependencyStatus(false) == DependencyStatus.HARD_RESOLVED) && (status == DependencyStatus.NONE) && !AddonManagerPlugin.getInstance().isInStartup()){
 					this.addon.load(AddonManagerPlugin.getInstance(), false);
 					this.addon.enable(AddonManagerPlugin.getInstance());
 				}
-				else if(this.currrentStatus == DependencyStatus.BOTH_RESOLVED && status == DependencyStatus.NONE){
+				else if((this.currrentStatus == DependencyStatus.BOTH_RESOLVED) && (status == DependencyStatus.NONE)){
 					//The addon must have been unloaded with another one it depends on
 					this.addon.load(AddonManagerPlugin.getInstance(), false);
 					this.addon.enable(AddonManagerPlugin.getInstance());
@@ -67,15 +67,15 @@ public class DependencyManager {
 					//TODO wha? It's already loaded?
 				}
 				this.softPlugins.put(plugin.getName(), true);
-				DependencyStatus status = this.currrentStatus;
-				if(this.getDependencyStatus(false) == DependencyStatus.BOTH_RESOLVED && status == DependencyStatus.HARD_RESOLVED && AddonManagerPlugin.getInstance().isInStartup()){
+				final DependencyStatus status = this.currrentStatus;
+				if((this.getDependencyStatus(false) == DependencyStatus.BOTH_RESOLVED) && (status == DependencyStatus.HARD_RESOLVED) && AddonManagerPlugin.getInstance().isInStartup()){
 					this.addon.load(AddonManagerPlugin.getInstance(), false);
 					this.addon.enable(AddonManagerPlugin.getInstance());
 				}
 			}
-		} catch (UnknownAddonException e) {
+		} catch (final UnknownAddonException e) {
 			e.printStackTrace();
-		} catch (InvalidAddonException e) {
+		} catch (final InvalidAddonException e) {
 			e.printStackTrace();
 		}
 	}
@@ -89,12 +89,12 @@ public class DependencyManager {
 				}
 				this.hardAddons.put(addon.getName(), true);
 				//New dependency detected, reassess status
-				DependencyStatus status = this.currrentStatus;
-				if(this.getDependencyStatus(false) == DependencyStatus.HARD_RESOLVED && status == DependencyStatus.NONE && !AddonManagerPlugin.getInstance().isInStartup()){
+				final DependencyStatus status = this.currrentStatus;
+				if((this.getDependencyStatus(false) == DependencyStatus.HARD_RESOLVED) && (status == DependencyStatus.NONE) && !AddonManagerPlugin.getInstance().isInStartup()){
 					this.addon.load(AddonManagerPlugin.getInstance(), false);
 					this.addon.enable(AddonManagerPlugin.getInstance());
 				}
-				else if(this.currrentStatus == DependencyStatus.BOTH_RESOLVED && status == DependencyStatus.NONE){
+				else if((this.currrentStatus == DependencyStatus.BOTH_RESOLVED) && (status == DependencyStatus.NONE)){
 					//The addon must have been unloaded with another one it depends on
 					this.addon.load(AddonManagerPlugin.getInstance(), false);
 					this.addon.enable(AddonManagerPlugin.getInstance());
@@ -107,19 +107,19 @@ public class DependencyManager {
 					//TODO wha? It's already loaded?
 				}
 				this.softAddons.put(addon.getName(), true);
-				DependencyStatus status = this.currrentStatus;
-				if(this.getDependencyStatus(false) == DependencyStatus.BOTH_RESOLVED && status == DependencyStatus.HARD_RESOLVED && AddonManagerPlugin.getInstance().isInStartup()){
+				final DependencyStatus status = this.currrentStatus;
+				if((this.getDependencyStatus(false) == DependencyStatus.BOTH_RESOLVED) && (status == DependencyStatus.HARD_RESOLVED) && AddonManagerPlugin.getInstance().isInStartup()){
 					this.addon.load(AddonManagerPlugin.getInstance(), false);
 					this.addon.enable(AddonManagerPlugin.getInstance());
 				}
 			}
-		} catch (UnknownAddonException e) {
+		} catch (final UnknownAddonException e) {
 			e.printStackTrace();
-		} catch (InvalidAddonException e) {
+		} catch (final InvalidAddonException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void pluginUnloaded(final Plugin plugin){
 		Boolean sastisfied = this.hardPlugins.get(plugin.getName());
 		if(sastisfied != null){
@@ -127,8 +127,8 @@ public class DependencyManager {
 				//Wha?
 			}
 			this.hardPlugins.put(plugin.getName(), false);
-			DependencyStatus status = this.currrentStatus;
-			if(this.getDependencyStatus(true) == DependencyStatus.NONE && status == DependencyStatus.HARD_RESOLVED || status == DependencyStatus.BOTH_RESOLVED)
+			final DependencyStatus status = this.currrentStatus;
+			if(((this.getDependencyStatus(true) == DependencyStatus.NONE) && (status == DependencyStatus.HARD_RESOLVED)) || (status == DependencyStatus.BOTH_RESOLVED))
 				//Darn, gotta unload it.
 				this.addon.unload();
 			return;
@@ -141,7 +141,7 @@ public class DependencyManager {
 			this.softPlugins.put(plugin.getName(), false);
 		}
 	}
-	
+
 	public void addonUnloaded(final Addon addon){
 		Boolean sastisfied = this.hardAddons.get(addon.getName());
 		if(sastisfied != null){
@@ -149,8 +149,8 @@ public class DependencyManager {
 				//Wha?
 			}
 			this.hardAddons.put(addon.getName(), false);
-			DependencyStatus status = this.currrentStatus;
-			if(this.getDependencyStatus(true) == DependencyStatus.NONE && status == DependencyStatus.HARD_RESOLVED || status == DependencyStatus.BOTH_RESOLVED)
+			final DependencyStatus status = this.currrentStatus;
+			if(((this.getDependencyStatus(true) == DependencyStatus.NONE) && (status == DependencyStatus.HARD_RESOLVED)) || (status == DependencyStatus.BOTH_RESOLVED))
 				//Darn, gotta unload it.
 				this.addon.unload();
 			return;
@@ -164,7 +164,7 @@ public class DependencyManager {
 		}
 	}
 
-	public DependencyStatus getDependencyStatus(boolean hardOnly){
+	public DependencyStatus getDependencyStatus(final boolean hardOnly){
 		boolean hardSastisfied = true;
 		for(final boolean value:this.hardAddons.values())
 			if(!value){
@@ -205,7 +205,7 @@ public class DependencyManager {
 			return DependencyStatus.HARD_RESOLVED;
 		}
 	}
-	
+
 	public DependencyStatus getCurrentStatus(){
 		return this.currrentStatus;
 	}
@@ -213,30 +213,30 @@ public class DependencyManager {
 	public static DependencyManager evaluate(final AddonManagerPlugin plugin, final ReloadableAddon addon, final Class<? extends Addon> addonClass, final String name){
 		try {
 			final DependencyManager manager = new DependencyManager(addon);
-				for(final Field field:addonClass.getDeclaredFields()){
-					field.setAccessible(true);
-					if(!Map.class.isAssignableFrom(field.getType()))
-						continue;
-					if(field.isAnnotationPresent(AddonDepends.class)){
-						final Map<String, DependencyType> depends = (Map<String, DependencyType>) field.get(null);
-						for(final Entry<String, DependencyType> entry:depends.entrySet()){
-							final boolean resolved = plugin.getAddon(entry.getKey()) != null; //TODO check more?
-							if(entry.getValue() == DependencyType.HARD)
-								manager.hardAddons.put(entry.getKey(), resolved);
-							else
-								manager.softAddons.put(entry.getKey(), resolved);
-						}
-					}else if(field.isAnnotationPresent(PluginDepends.class)){
-						final Map<String, DependencyType> depends = (Map<String, DependencyType>) field.get(null);
-						for(final Entry<String, DependencyType> entry:depends.entrySet()){
-							final boolean resolved = plugin.getAddon(entry.getKey()) != null; //TODO check more?
-							if(entry.getValue() == DependencyType.HARD)
-								manager.hardPlugins.put(entry.getKey(), resolved);
-							else
-								manager.softPlugins.put(entry.getKey(), resolved);
-						}
+			for(final Field field:addonClass.getDeclaredFields()){
+				field.setAccessible(true);
+				if(!Map.class.isAssignableFrom(field.getType()))
+					continue;
+				if(field.isAnnotationPresent(AddonDepends.class)){
+					final Map<String, DependencyType> depends = (Map<String, DependencyType>) field.get(null);
+					for(final Entry<String, DependencyType> entry:depends.entrySet()){
+						final boolean resolved = plugin.getAddon(entry.getKey()) != null; //TODO check more?
+						if(entry.getValue() == DependencyType.HARD)
+							manager.hardAddons.put(entry.getKey(), resolved);
+						else
+							manager.softAddons.put(entry.getKey(), resolved);
+					}
+				}else if(field.isAnnotationPresent(PluginDepends.class)){
+					final Map<String, DependencyType> depends = (Map<String, DependencyType>) field.get(null);
+					for(final Entry<String, DependencyType> entry:depends.entrySet()){
+						final boolean resolved = plugin.getAddon(entry.getKey()) != null; //TODO check more?
+						if(entry.getValue() == DependencyType.HARD)
+							manager.hardPlugins.put(entry.getKey(), resolved);
+						else
+							manager.softPlugins.put(entry.getKey(), resolved);
 					}
 				}
+			}
 			return manager;
 		} catch (final SecurityException e) {
 			e.printStackTrace();
