@@ -15,7 +15,7 @@ import org.sensationcraft.addonmanager.exceptions.InvalidAddonException;
 import org.sensationcraft.addonmanager.exceptions.UnknownAddonException;
 
 /**
- * Manages dependencies for an addon. Each addon has it's own manager. This should not be unless you know what you're doing.
+ * Manages dependencies for an addon. Each addon has it's own manager. This should not be used unless you know what you're doing.
  */
 public class DependencyManager {
 
