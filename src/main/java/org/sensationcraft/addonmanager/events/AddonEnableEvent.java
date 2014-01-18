@@ -4,6 +4,10 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.sensationcraft.addonmanager.Addon;
 
+/**
+ * Called when an Addon is enabled
+ * Note: this is called AFTER onEnable is called for the Addon, but only if the Addon did not throw an error
+ */
 public class AddonEnableEvent extends Event{
 
 	private final Addon addon;

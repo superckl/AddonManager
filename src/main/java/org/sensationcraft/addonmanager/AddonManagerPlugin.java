@@ -274,6 +274,9 @@ public class AddonManagerPlugin extends JavaPlugin implements Listener{
 		return null;
 	}
 
+	/**
+	 * @return The default AddonManager being used
+	 */
 	public AddonManager getAddonManager(){
 		return this.manager;
 	}
@@ -283,6 +286,9 @@ public class AddonManagerPlugin extends JavaPlugin implements Listener{
 		this.users.put(e.getPlayer().getName(), new AddonUser(e.getPlayer()));
 	}
 
+	/**
+	 * @return Whether AddonManager is in startup or not.
+	 */
 	public boolean isInStartup() {
 		return this.inStartup;
 	}

@@ -9,7 +9,6 @@ import org.sensationcraft.addonmanager.AddonManagerPlugin;
 /**
  * Works as an interface between the addon and Bukkit. Currently just cancels the task on reload, will be changed so it continues to execute
  */
-//TODO
 public abstract class AddonRunnable extends BukkitRunnable{
 
 	private volatile boolean finished;

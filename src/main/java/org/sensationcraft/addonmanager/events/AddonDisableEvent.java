@@ -4,6 +4,10 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.sensationcraft.addonmanager.Addon;
 
+/**
+ * Called when an Addon is disabled
+ * Note: this is called AFTER onDisable is called for the Addon, regardless of the addon throwing an error
+ */
 public class AddonDisableEvent extends Event{
 
 	private final Addon addon;

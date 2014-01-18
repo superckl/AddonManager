@@ -4,6 +4,9 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.sensationcraft.addonmanager.users.AddonUser;
 
+/**
+ * Called whenever there is a potential change to a user's money, regardless of what the change is
+ */
 public class MoneyChangeEvent extends Event{
 
 	private double to;

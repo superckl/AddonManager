@@ -25,6 +25,10 @@ import org.sensationcraft.addonmanager.addon.dependencies.DependencyStatus;
 import org.sensationcraft.addonmanager.exceptions.InvalidAddonException;
 import org.sensationcraft.addonmanager.exceptions.UnknownAddonException;
 
+
+/**
+ * Although they can access it, addons should not have to touch this class. It is used for internal loading and unloading of addons. Only use it if you are SURE you know what you're doing.
+ */
 public class AddonManager implements CommandExecutor
 {
 

@@ -28,6 +28,9 @@ public class AddonUser {
 		this.simpleMoneyManager = new SimpleMoneyManager(this);
 	}
 
+	/**
+	 * @return The MoneyManager assigned to this User
+	 */
 	public MoneyManager getMoneyManager() {
 		return this.simpleMoneyManager;
 	}

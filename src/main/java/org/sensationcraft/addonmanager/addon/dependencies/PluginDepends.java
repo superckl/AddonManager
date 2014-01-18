@@ -7,6 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * @deprecated Tell them to make an Addon version! Plugins and Addons don't play well together.
+ * Annotate a static Map<String, DependencyType> with this to declare dependencies.
  */
 @Deprecated
 @Retention(RetentionPolicy.RUNTIME)

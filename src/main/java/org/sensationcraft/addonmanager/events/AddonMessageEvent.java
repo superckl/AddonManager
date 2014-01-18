@@ -4,6 +4,10 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.sensationcraft.addonmanager.AbstractReloadable;
 
+/**
+ * Can be used by Addons to communicate
+ * @param <K> The format the message is in.
+ */
 public class AddonMessageEvent<K> extends Event{
 
 	private final AbstractReloadable addon;
