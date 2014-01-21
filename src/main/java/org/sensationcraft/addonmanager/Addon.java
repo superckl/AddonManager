@@ -101,7 +101,7 @@ public abstract class Addon
      * @return The config file this addon should use
      */
     
-    public YamlConfiguration geConfig(){
+    public YamlConfiguration getConfig(){
     	return this.config;
     }
     
