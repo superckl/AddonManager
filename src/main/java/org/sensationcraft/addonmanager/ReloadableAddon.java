@@ -216,8 +216,11 @@ public class ReloadableAddon extends AbstractReloadable
 				}
 			if(!reload)
 				this.addon = a;
+			File file = new File(plugin.getDataFolder(), String.format("addons/%s/config.yml", this.addon.getName()));
+			if(!file.exists())
+				file.createNewFile();
+			this.addon.setConfigFile(file);
 			plugin.getAddonManager().getAddons().put(this.addon.getName(), this);
-			//break; NOTE: Only one should load?
 		}
 		catch(final InvocationTargetException ex)
 		{

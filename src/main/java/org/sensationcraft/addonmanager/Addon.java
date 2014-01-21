@@ -1,6 +1,9 @@
 package org.sensationcraft.addonmanager;
 
+import java.io.File;
 import java.util.logging.Logger;
+
+import org.bukkit.configuration.file.YamlConfiguration;
 
 public abstract class Addon
 {
@@ -10,6 +13,8 @@ public abstract class Addon
 	private final AddonDescriptionFile desc;
     
     private final Logger logger;
+    
+    private YamlConfiguration config;
 
 	public Addon(final AddonManagerPlugin scg, final AddonDescriptionFile desc)
 	{
@@ -90,5 +95,17 @@ public abstract class Addon
     public Logger getLogger()
     {
         return this.logger;
+    }
+    
+    /**
+     * @return The config file this addon should use
+     */
+    
+    public YamlConfiguration geConfig(){
+    	return this.config;
+    }
+    
+    void setConfigFile(File file){
+    	this.config = YamlConfiguration.loadConfiguration(file);
     }
 }

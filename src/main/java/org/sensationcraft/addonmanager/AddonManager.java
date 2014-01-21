@@ -321,7 +321,7 @@ public class AddonManager implements CommandExecutor
 			addon.unload();
 	}
 
-	public Map<String, AbstractReloadable> getAddons(){
+	protected Map<String, AbstractReloadable> getAddons(){
 		return this.addons;
 	}
 
